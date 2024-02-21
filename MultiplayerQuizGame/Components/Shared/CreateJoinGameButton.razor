@@ -1,0 +1,12 @@
+@inject NavigationManager NavigationManager
+<button class="button-27" @onclick="CreateGame">Create game</button>
+<button class="button-27" @onclick="JoinGame">Join game</button>
+@code{
+ public void CreateGame(){
+        NavigationManager.NavigateTo("/create-game");
+    }
+
+public void JoinGame(){
+    NavigationManager.NavigateTo("/join-game");
+}
+}
