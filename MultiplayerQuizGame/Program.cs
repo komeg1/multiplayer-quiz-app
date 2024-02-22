@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Client.Pages;
 using MultiplayerQuizGame.Components;
 using MultiplayerQuizGame.Components.Data;
-
+using MultiplayerQuizGame.Components.Repositories;
+using MultiplayerQuizGame.Components.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,6 +15,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 options.UseSqlServer(builder
                         .Configuration
                         .GetConnectionString("DefaultDbConnection")));
+
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IRoomService, RoomService>();
 
 var app = builder.Build();
 

@@ -11,5 +11,7 @@ namespace MultiplayerQuizGame.Components.Models
         public required string Room_code { get; set; }
         public List<Quiz>? Quizes { get; set; }
         public List<User>? Players { get; set; }
+        public required DateTime Created_at { get; set; }
+        public bool IsOpen { get; set; }
     }
 }

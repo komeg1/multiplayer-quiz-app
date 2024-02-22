@@ -1,3 +1,21 @@
 @page "/create-game"
-@rendermode InteractiveServer
+@attribute [StreamRendering]
+@inject IRoomService RoomService
 <h1>test</h1>
+@if (room == null)
+{
+    <p>Creating room...</p>
+}
+else
+{
+    <p>Room created: @room.Room_code</p>
+    <p>Date of creation @room.Created_at</p>
+}
+
+@code{
+    Room room = null;
+    protected override async Task OnInitializedAsync()
+    {
+        room = await RoomService.CreateRoom();
+    }
+}
