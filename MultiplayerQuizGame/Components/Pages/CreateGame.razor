@@ -1,10 +1,15 @@
 @page "/create-game"
 @attribute [StreamRendering]
 @inject IRoomService RoomService
+@inject NavigationManager NavigationManager
 <h1>test</h1>
 @if (room == null)
 {
-    <p>Creating room...</p>
+    <EditForm Model= "userConnection" OnSubmit="CreateRoom" FormName="createGame">
+        <label>Username</label>
+        <InputText @bind-Value="userConnection.Username">@userConnection.Username</InputText>
+        <button type="submit" class = "btn btn-primary">Submit</button>
+    </EditForm>
 }
 else
 {
@@ -13,9 +18,13 @@ else
 }
 
 @code{
+    [SupplyParameterFromForm]
+    UserConnection userConnection {get;set;} = new UserConnection {Username = string.Empty}; 
     Room room = null;
-    protected override async Task OnInitializedAsync()
+    
+    async Task CreateRoom()
     {
-        room = await RoomService.CreateRoom();
+        room = await RoomService.CreateRoom(userConnection);
+        NavigationManager.NavigateTo("/roomer");
     }
 }

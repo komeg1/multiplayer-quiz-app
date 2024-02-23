@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
+using MultiplayerQuizGame.Components.Hubs;
 using MultiplayerQuizGame.Components.Models;
 using MultiplayerQuizGame.Components.Repositories;
 
@@ -12,23 +15,34 @@ namespace MultiplayerQuizGame.Components.Services
     {
         private Random _random;
         private readonly IRoomRepository _roomRepository;
+        private HubConnection? _hubConnection;
         private const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        private readonly NavigationManager _navigationManager;
         private const int ROOM_CODE_LENGTH = 5;
-        public RoomService(IRoomRepository roomRepository){
+        public RoomService(IRoomRepository roomRepository, NavigationManager navigationManager){
             _random = new Random();
             _roomRepository = roomRepository;
+            _navigationManager = navigationManager;
         }
         public Task<Room> CloseRoom(string roomCode)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Room> CreateRoom()
+        public async Task<Room> CreateRoom(UserConnection userConnection)
         {
             string roomCode = await GenerateRoomCode();
             Room room = new Room { Room_code = roomCode, Created_at = DateTime.Now, IsOpen = true };
+            userConnection.RoomCode = roomCode;
             if(await _roomRepository.AddRoomAsync(room))
+               {
+                _hubConnection = new HubConnectionBuilder()
+                                .WithUrl(_navigationManager.ToAbsoluteUri("/room"))
+                                .Build();
+                await _hubConnection.StartAsync();
+                await _hubConnection.InvokeAsync("JoinRoom",userConnection);
                 return room;
+               }
             return null;
         }
 

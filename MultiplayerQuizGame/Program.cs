@@ -1,7 +1,10 @@
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Client.Pages;
 using MultiplayerQuizGame.Components;
 using MultiplayerQuizGame.Components.Data;
+using MultiplayerQuizGame.Components.Hubs;
 using MultiplayerQuizGame.Components.Repositories;
 using MultiplayerQuizGame.Components.Services;
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,7 @@ options.UseSqlServer(builder
                         .Configuration
                         .GetConnectionString("DefaultDbConnection")));
 
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 
@@ -33,6 +37,7 @@ else
     app.UseHsts();
 }
 
+app.MapHub<RoomHub>("/room");
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
