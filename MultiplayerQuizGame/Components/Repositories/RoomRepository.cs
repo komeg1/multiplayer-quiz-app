@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MultiplayerQuizGame.Components.Data;
-using MultiplayerQuizGame.Components.Models;
+using MultiplayerQuizGame.Shared.Data;
+using MultiplayerQuizGame.Shared.Models;
 
 namespace MultiplayerQuizGame.Components.Repositories
 {
@@ -24,7 +24,7 @@ namespace MultiplayerQuizGame.Components.Repositories
         public async Task<Room> GetRoomByCodeAsync(string roomCode)
         {
             Console.WriteLine($"Room code: {roomCode}");
-            return await _context.Rooms.FirstOrDefaultAsync(r => r.Room_code == roomCode).ConfigureAwait(false);
+            return await _context.Rooms.FirstOrDefaultAsync(r => r.Room_Code == roomCode).ConfigureAwait(false);
         }
     }
 }

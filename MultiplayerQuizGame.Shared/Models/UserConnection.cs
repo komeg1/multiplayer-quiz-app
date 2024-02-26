@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MultiplayerQuizGame.Components.Models
+namespace MultiplayerQuizGame.Shared.Models
 {
     public class UserConnection
     {

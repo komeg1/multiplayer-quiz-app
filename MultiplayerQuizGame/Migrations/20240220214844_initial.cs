@@ -32,7 +32,7 @@ namespace MultiplayerQuizGame.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Room_code = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    RoomCode = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

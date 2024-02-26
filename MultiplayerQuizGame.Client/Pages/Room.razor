@@ -1,0 +1,78 @@
+@page "/room/{RoomCode}"
+@inject NavigationManager NavigationManager
+@rendermode InteractiveWebAssembly
+
+<h3>Room</h3>
+
+@if(IsConnected)
+{
+    <input type="text" @bind="RoomCode"/>
+    <button @onclick="Send">Send</button>
+    <button @onclick="SendToRoom">Send To Room</button>
+    <input type="text" @bind="joinroom"/>
+    <button @onclick="JoinRoom">Join Room</button>
+
+    <ul id="messagesList">
+        @foreach(var message in messages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+    <ul id="messagesRoomList">
+        @foreach(var message in roomMessages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+}
+else
+{
+    <span>Connecting...</span>
+}
+
+@code{
+    private HubConnection _hubConnection;
+    private List<string> messages = new List<string>();
+    private List<string> roomMessages = new List<string>();
+    private string userInput;
+    private string messageInput;
+    [Parameter]
+    public string? RoomCode { get; set; }
+    private string joinroom;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/roomhub"))
+        .Build();
+
+
+        _hubConnection.On<string,string>("ReceiveMessage",(user,message)=>
+            {
+                var encodedMsg = $"{user}: {message}";
+                messages.Add(encodedMsg);
+                StateHasChanged();
+            });
+
+        _hubConnection.On<string>("ReceiveGroupMessage",(message)=>
+            {
+                var encodedMsg = $"{message}";
+                roomMessages.Add(encodedMsg);
+                StateHasChanged();
+            });
+
+        await _hubConnection.StartAsync();
+
+
+
+    }
+
+
+    Task Send() => _hubConnection.SendAsync("SendMessage",userInput,messageInput);
+    public async Task SendToRoom() {
+        NavigationManager.NavigateTo($"room/{RoomCode}");
+        _hubConnection.SendAsync("SendMessageToRoom", RoomCode, messageInput);
+    }
+    async Task JoinRoom() => await _hubConnection.SendAsync("JoinRoom",joinroom);
+        public bool IsConnected => _hubConnection.State == HubConnectionState.Connected;
+}

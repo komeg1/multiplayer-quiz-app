@@ -1,0 +1,31 @@
+@page "/create-game"
+@attribute [StreamRendering]
+@inject IRoomService RoomService
+@inject NavigationManager NavigationManager
+<h1>test</h1>
+@if (room == null)
+{
+    <EditForm OnSubmit="CreateRoom" FormName="createGame">
+        <label>Username</label>
+        <InputText @bind-Value="Username">@Username</InputText>
+        <button type="submit" class = "btn btn-primary">Submit</button>
+    </EditForm>
+}
+else
+{
+    <p>Room created: @room.Room_Code</p>
+    <p>Date of creation @room.Created_at</p>
+    <p>Nickname: @Username</p>
+}
+
+@code{
+    public string? Username { get; set; }
+    MultiplayerQuizGame.Shared.Models.Room room = null;
+
+    async Task CreateRoom()
+    {
+        room = await RoomService.CreateRoom(room.Room_Code);
+        NavigationManager.NavigateTo($"/room/{room.Room_Code}");
+
+    }
+}

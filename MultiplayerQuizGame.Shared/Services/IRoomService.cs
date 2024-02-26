@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MultiplayerQuizGame.Components.Models;
-namespace MultiplayerQuizGame.Components.Services
+using MultiplayerQuizGame.Shared.Models;
+namespace MultiplayerQuizGame.Shared.Services
 {
     public interface IRoomService
     {
-        Task<Room> CreateRoom(UserConnection userConnection);
+        Task<Room> CreateRoom(string roomCode);
         Task<Room> GetRoom(string roomCode);
         Task<Room> CloseRoom(string roomCode);
         Task<bool> IsCodeUnique(string roomCode);
-
         Task<string> GenerateRoomCode();
 
     

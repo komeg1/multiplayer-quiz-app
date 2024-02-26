@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MultiplayerQuizGame.Components.Data;
+using MultiplayerQuizGame.Shared.Data;
 
 #nullable disable
 
@@ -25,7 +25,7 @@ namespace MultiplayerQuizGame.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Question", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Question", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -49,7 +49,7 @@ namespace MultiplayerQuizGame.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Question_choices", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Question_choices", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace MultiplayerQuizGame.Migrations
                     b.ToTable("Question_Choices");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Quiz", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Quiz", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -97,7 +97,7 @@ namespace MultiplayerQuizGame.Migrations
                     b.ToTable("Quizzes");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Room", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Room", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -111,7 +111,7 @@ namespace MultiplayerQuizGame.Migrations
                     b.Property<bool>("IsOpen")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Room_code")
+                    b.Property<string>("RoomCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -120,7 +120,7 @@ namespace MultiplayerQuizGame.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.User", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -175,16 +175,16 @@ namespace MultiplayerQuizGame.Migrations
                     b.ToTable("RoomUser");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Question", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Question", b =>
                 {
-                    b.HasOne("MultiplayerQuizGame.Components.Models.Quiz", null)
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Quiz", null)
                         .WithMany("Questions")
                         .HasForeignKey("QuizId");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Question_choices", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Question_choices", b =>
                 {
-                    b.HasOne("MultiplayerQuizGame.Components.Models.Question", "Question")
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Question", "Question")
                         .WithMany("Question_Choices")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -195,13 +195,13 @@ namespace MultiplayerQuizGame.Migrations
 
             modelBuilder.Entity("QuizRoom", b =>
                 {
-                    b.HasOne("MultiplayerQuizGame.Components.Models.Quiz", null)
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Quiz", null)
                         .WithMany()
                         .HasForeignKey("QuizesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MultiplayerQuizGame.Components.Models.Room", null)
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Room", null)
                         .WithMany()
                         .HasForeignKey("RoomsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -210,25 +210,25 @@ namespace MultiplayerQuizGame.Migrations
 
             modelBuilder.Entity("RoomUser", b =>
                 {
-                    b.HasOne("MultiplayerQuizGame.Components.Models.User", null)
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.User", null)
                         .WithMany()
                         .HasForeignKey("PlayersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MultiplayerQuizGame.Components.Models.Room", null)
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Room", null)
                         .WithMany()
                         .HasForeignKey("RoomsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Question", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Question", b =>
                 {
                     b.Navigation("Question_Choices");
                 });
 
-            modelBuilder.Entity("MultiplayerQuizGame.Components.Models.Quiz", b =>
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Quiz", b =>
                 {
                     b.Navigation("Questions");
                 });

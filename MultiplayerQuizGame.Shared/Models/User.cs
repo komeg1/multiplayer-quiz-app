@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MultiplayerQuizGame.Components.Models
+namespace MultiplayerQuizGame.Shared.Models
 {
     public class User
     {

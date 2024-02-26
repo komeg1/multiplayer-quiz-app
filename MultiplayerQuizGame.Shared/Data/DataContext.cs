@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MultiplayerQuizGame.Components.Models;
+using MultiplayerQuizGame.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MultiplayerQuizGame.Components.Data
+namespace MultiplayerQuizGame.Shared.Data
 {
     public class DataContext : DbContext
     {

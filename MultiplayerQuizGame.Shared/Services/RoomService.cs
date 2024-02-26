@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using MultiplayerQuizGame.Components.Hubs;
-using MultiplayerQuizGame.Components.Models;
+using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Components.Repositories;
 
-namespace MultiplayerQuizGame.Components.Services
+namespace MultiplayerQuizGame.Shared.Services
 {
     public class RoomService : IRoomService
     {
@@ -18,7 +17,7 @@ namespace MultiplayerQuizGame.Components.Services
         private HubConnection? _hubConnection;
         private const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         private readonly NavigationManager _navigationManager;
-        private const int ROOM_CODE_LENGTH = 5;
+        private const int RoomCode_LENGTH = 5;
         public RoomService(IRoomRepository roomRepository, NavigationManager navigationManager){
             _random = new Random();
             _roomRepository = roomRepository;
@@ -32,15 +31,10 @@ namespace MultiplayerQuizGame.Components.Services
         public async Task<Room> CreateRoom(UserConnection userConnection)
         {
             string roomCode = await GenerateRoomCode();
-            Room room = new Room { Room_code = roomCode, Created_at = DateTime.Now, IsOpen = true };
+            Room room = new Room { Room_Code = roomCode, Created_at = DateTime.Now, IsOpen = true };
             userConnection.RoomCode = roomCode;
-            if(await _roomRepository.AddRoomAsync(room))
+            if(await _roomRepository.AddRoomAsync(room).ConfigureAwait(false))
                {
-                _hubConnection = new HubConnectionBuilder()
-                                .WithUrl(_navigationManager.ToAbsoluteUri("/room"))
-                                .Build();
-                await _hubConnection.StartAsync();
-                await _hubConnection.InvokeAsync("JoinRoom",userConnection);
                 return room;
                }
             return null;
@@ -52,7 +46,7 @@ namespace MultiplayerQuizGame.Components.Services
             do
             {
                 builder.Clear();
-                for (int i = 0; i < ROOM_CODE_LENGTH; i++)
+                for (int i = 0; i < RoomCode_LENGTH; i++)
                 {
                     builder.Append(CHARS[_random.Next(CHARS.Length)]);
                 }
