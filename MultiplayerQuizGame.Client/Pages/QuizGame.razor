@@ -1,0 +1,48 @@
+﻿@page "/quiz/{Id}"
+@rendermode InteractiveWebAssembly
+@inject IQuizService QuizService
+<h3>Quiz @Id</h3>
+<HeadContent>
+    <link rel="stylesheet" href="app_client.css" />
+</HeadContent>
+@if (!isLoaded)
+{
+    <span>Loading...</span>
+}
+else
+{
+    @if (ChosenQuiz != null)
+    {
+        
+        <div class="w-full p-8 bg-white rounded-lg shadow-lg">
+        @foreach(var question in ChosenQuiz.Questions)
+        {
+            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">@question.Description</h2>
+            <div class="grid grid-cols-2 gap-4">
+            @foreach(var answer in question.Question_Choices)
+            {
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">@answer.ChoiceDescription</button>
+            }
+            </div>
+        }
+        </div>
+       
+    }
+
+
+
+}
+@code {
+    bool isLoaded = false;
+
+    public Quiz ChosenQuiz { get; set; }
+
+    [Parameter]
+    public string Id { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        ChosenQuiz = await QuizService.GetQuiz(Int32.Parse(Id));
+        isLoaded = true;
+    }
+}

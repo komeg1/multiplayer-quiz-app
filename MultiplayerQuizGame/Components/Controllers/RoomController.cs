@@ -17,7 +17,7 @@ namespace MultiplayerQuizGame.Components.Controllers
         [HttpPost]
         public async void CreateRoom(string roomCode)
         {
-            await _roomService.CreateRoom(roomCode);
+            //await _roomService.CreateRoom(roomCode);
         }
 
         [HttpGet]

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Client.Pages;
 using MultiplayerQuizGame.Components;
 using MultiplayerQuizGame.Shared.Data;
-using MultiplayerQuizGame.Components.Repositories;
+using MultiplayerQuizGame.Shared.Repositories;
 using MultiplayerQuizGame.Shared.Services;
 using MultiplayerQuizGame.Components.Hubs;
 var builder = WebApplication.CreateBuilder(args);
@@ -25,11 +25,19 @@ builder.Services.AddScoped(http => new HttpClient
 builder.Services.AddDbContext<DataContext>(options =>
 options.UseSqlServer(builder
                         .Configuration
-                        .GetConnectionString("DefaultDbConnection")));
+                        .GetConnectionString("DefaultDbConnection"),
+                        b=>b.MigrationsAssembly("MultiplayerQuizGame")));
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-builder.Services.AddScoped<IRoomService, RoomService>();
+//builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllersWithViews().AddNewtonsoftJson(x =>
+{
+    x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});
+
 
 var app = builder.Build();
 
@@ -49,7 +57,11 @@ app.UseHttpsRedirection();
 app.MapControllers();
 app.UseStaticFiles();
 app.UseAntiforgery();
-
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
+});
 app.MapHub<RoomHub>("/roomhub");
 
 app.MapRazorComponents<App>()

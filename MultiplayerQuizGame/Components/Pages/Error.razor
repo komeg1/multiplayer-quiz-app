@@ -1,6 +1,6 @@
 ﻿@page "/Error"
 @using System.Diagnostics
-
+@inject DataContext dbContext
 <PageTitle>Error</PageTitle>
 
 <h1 class="text-danger">Error.</h1>
@@ -23,7 +23,6 @@
     For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
     and restarting the app.
 </p>
-
 @code{
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -33,4 +32,6 @@
 
     protected override void OnInitialized() =>
         RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+
+    
 }

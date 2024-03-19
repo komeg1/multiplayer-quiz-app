@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiplayerQuizGame", "Mult
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiplayerQuizGame.Client", "MultiplayerQuizGame.Client\MultiplayerQuizGame.Client.csproj", "{4BDFC881-8EDD-47FC-B443-A96B72A9FF58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiplayerQuizGame.Shared", "MultiplayerQuizGame.Shared\MultiplayerQuizGame.Shared.csproj", "{9C2BA816-1916-4484-A3C9-1A59F9E46DD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiplayerQuizGame.Shared", "MultiplayerQuizGame.Shared\MultiplayerQuizGame.Shared.csproj", "{9C2BA816-1916-4484-A3C9-1A59F9E46DD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

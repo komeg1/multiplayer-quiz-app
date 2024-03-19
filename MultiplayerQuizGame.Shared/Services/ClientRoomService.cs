@@ -20,9 +20,9 @@ namespace MultiplayerQuizGame.Shared.Services
             throw new NotImplementedException();
         }
 
-        public Task<Room> CreateRoom(string roomCode)
+        public Task<Room> CreateRoom()
         {
-            
+            throw new NotImplementedException();
         }
 
         public Task<string> GenerateRoomCode()

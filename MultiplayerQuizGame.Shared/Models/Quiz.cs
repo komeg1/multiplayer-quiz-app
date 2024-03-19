@@ -14,4 +14,10 @@ namespace MultiplayerQuizGame.Shared.Models
         public required List<Question> Questions { get; set; }
         public List<Room>? Rooms { get; set; }
     }
+
+    public class QuizInfo
+    {
+        public Quiz Quiz { get; set; }
+        public int QuestionCount { get; set; }
+    }
 }

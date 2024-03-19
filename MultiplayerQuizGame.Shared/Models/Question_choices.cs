@@ -9,7 +9,7 @@ namespace MultiplayerQuizGame.Shared.Models
     {
         public int Id { get; set; }
         public required int QuestionId { get; set;}
-        public required Question Question { get; set;}
+        public Question Question { get; set;}
         public required bool IsTrue { get; set; }
         public required string ChoiceDescription { get; set; }
     }
