@@ -1,4 +1,6 @@
-﻿@page "/quiz/{Id}"
+﻿@using System.Timers
+
+@page "/quiz/{Id}"
 @rendermode InteractiveWebAssembly
 @inject IQuizService QuizService
 <h3>Quiz @Id</h3>
@@ -11,29 +13,56 @@
 }
 else
 {
-    @if (ChosenQuiz != null)
+    <div class="w-full p-8 bg-white rounded-lg shadow-lg">
+    @if(isQuestionFinished)
     {
-        
-        <div class="w-full p-8 bg-white rounded-lg shadow-lg">
-        @foreach(var question in ChosenQuiz.Questions)
-        {
-            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">@question.Description</h2>
-            <div class="grid grid-cols-2 gap-4">
-            @foreach(var answer in question.Question_Choices)
-            {
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">@answer.ChoiceDescription</button>
-            }
-            </div>
-        }
-        </div>
+            <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @ResultCountdownText</span>
+            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
+
+    }
+    @if (ChosenQuiz != null && !isQuizFinished && !isQuestionFinished)
+    {
+        <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @CountdownText</span>
+        <span>Score: @score/@ChosenQuiz.Questions.Count</span>
+        <span>Points: @points</span>
+            <CurrentQuestion Question="ChosenQuiz.Questions[questionNr]" OnCorrectAnswer="IncrementScore" OnQuestionChange="ShowQuestionResult" />
        
     }
+    else if (isQuizFinished)
+    {
+        <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
+        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@ChosenQuiz.Questions.Count</h5>
+
+    }
+    </div>
 
 
 
 }
 @code {
+    const int MAX_QUESTION_SCORE = 100;
+    const int MAX_QUESTION_SECONDS = 15;
+    const int MAX_RESULT_SECONDS = 10;
+    const int ONE_SECOND = 1000;
+
+    bool isQuestionFinished = false;
     bool isLoaded = false;
+    bool isQuizFinished = false;
+
+   
+    int countdownSeconds = MAX_QUESTION_SECONDS;
+    int resultSeconds = MAX_RESULT_SECONDS;
+    string CountdownText => $"{countdownSeconds/60:00}:{countdownSeconds}";
+    string ResultCountdownText => $"{resultSeconds / 60:00}:{resultSeconds}";
+
+
+    int score = 0;
+    float points = 0;
+    int questionNr = 0;
+
+
+    Timer questionTimer = null!;
+    Timer resultTimer = null;
 
     public Quiz ChosenQuiz { get; set; }
 
@@ -44,5 +73,93 @@ else
     {
         ChosenQuiz = await QuizService.GetQuiz(Int32.Parse(Id));
         isLoaded = true;
+        InitTimer(ref questionTimer, OnQuestionTimedEvent);
     }
+
+    public async void IncrementScore()
+    {
+        Console.WriteLine(MAX_QUESTION_SCORE * (countdownSeconds / MAX_QUESTION_SECONDS));
+        points += (MAX_QUESTION_SCORE * (float)((float)countdownSeconds / (float)MAX_QUESTION_SECONDS));
+        score++;
+        StateHasChanged();
+    }
+    public async void ShowQuestionResult()
+    {
+        if (resultTimer is null)
+        {
+            InitTimer(ref resultTimer, OnResultTimedEvent);
+        }
+        else
+        {
+            resultTimer.Start();
+        }
+        isQuestionFinished = true;
+
+    }
+    public async void ChangeQuestion()
+    {
+        if (questionNr < ChosenQuiz.Questions.Count - 1)
+        {
+            questionNr++;
+            countdownSeconds = 15;
+        }
+        else
+        {
+            isQuizFinished = true;
+            Dispose(questionTimer);
+            Dispose(resultTimer);
+        }
+        StateHasChanged();
+    }
+
+    //TIMER METHODS
+    void InitTimer(ref Timer timer, ElapsedEventHandler elapsedEvent)
+    {
+        timer = new Timer(ONE_SECOND);
+        timer.Elapsed += elapsedEvent;
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+    private void OnResultTimedEvent(object? sender, ElapsedEventArgs e)
+    {
+        resultSeconds--;
+        if (resultSeconds == 0)
+        {
+            resultTimer.Stop();
+            isQuestionFinished = false;
+            resultSeconds = MAX_RESULT_SECONDS;
+            questionTimer.Start();
+            ChangeQuestion();
+        }
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+    private void OnQuestionTimedEvent(object? sender, ElapsedEventArgs e)
+    {
+        countdownSeconds--;
+
+        if (countdownSeconds == 0)
+        {
+            questionTimer.Stop();
+            questionNr++;
+            countdownSeconds = MAX_QUESTION_SECONDS;
+            ShowQuestionResult();
+        }
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+       
+    }
+
+    void Dispose(Timer timer)
+    {
+        timer.Dispose();
+    }
+
+
+
+    
 }
