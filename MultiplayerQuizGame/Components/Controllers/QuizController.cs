@@ -2,12 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Services;
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using MultiplayerQuizGame.Shared.Models.DTO;
 namespace MultiplayerQuizGame.Components.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class QuizController : ControllerBase
+    public class QuizController : Controller
     {
         private readonly IQuizService _quizService;
         public QuizController(IQuizService quizService)
@@ -26,5 +29,9 @@ namespace MultiplayerQuizGame.Components.Controllers
             var quiz = await _quizService.GetQuiz(Int32.Parse(id));
             return Ok(quiz);
         }
+
+       
+
+        
     }
 }

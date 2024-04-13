@@ -1,0 +1,51 @@
+﻿@inject IUserService UserService
+@inject NavigationManager NavigationManager
+
+@page "/login"
+<EditForm method="post" OnSubmit="LoginUser" Model="Credentials" FormName="LoginUser">
+    <InputText @bind-Value="Credentials.Username" placeholder="Username" class="form-control"/>
+    <InputText @bind-Value="Credentials.Password" placeholder="Password" type="password" class="form-control"/>
+    <button type="submit" class=" text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Sign in</button>
+</EditForm>
+@code {
+    [SupplyParameterFromForm]
+    public LoginDto Credentials { get; set; } = new LoginDto();
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+
+    }
+
+
+    public async Task LoginUser()
+    {
+        var foundUser = await UserService.Login(Credentials);
+        if (foundUser != null)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(type: ClaimTypes.Name, Credentials.Username),
+                new Claim(type: ClaimTypes.Role, "LoggedUser"),
+                new Claim(type: "id", foundUser.Id.ToString()),
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(principal);
+                NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Console.WriteLine("nie zalogowany");
+        }
+    }
+    void ReturnHome() => NavigationManager.NavigateTo("/");
+}

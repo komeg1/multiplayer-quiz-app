@@ -1,4 +1,5 @@
-﻿@rendermode InteractiveServer
+﻿@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
@@ -6,9 +7,21 @@
         <div class="nav-item px-3">
             <CreateJoinGameButton></CreateJoinGameButton>
         </div>
-        <div class="nav-item px-3">
-            
-        </div>
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <button class="button-27" @onclick="HandleRegisterRoute">Register</button>
+                </div>
+                <div class="nav-item px-3">
+                    <button class="button-27" @onclick="HandleLoginRoute">Login</button>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        
     </nav>
 </div>
 
+@code{
+    void HandleRegisterRoute() => NavigationManager.NavigateTo("/register");
+    void HandleLoginRoute() => NavigationManager.NavigateTo("/login");
+}
