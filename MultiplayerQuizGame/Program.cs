@@ -1,14 +1,14 @@
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
-using MultiplayerQuizGame.Client.Pages;
 using MultiplayerQuizGame.Components;
 using MultiplayerQuizGame.Shared.Data;
 using MultiplayerQuizGame.Shared.Repositories;
-using MultiplayerQuizGame.Shared.Services;
-using MultiplayerQuizGame.Components.Hubs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using MultiplayerQuizGame.Shared.Repositories.Interfaces;
+using MultiplayerQuizGame.Shared.Services;
+using MultiplayerQuizGame.Shared.Services.Interfaces;
+using MultiplayerQuizGame.Shared.Repositories;
+using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,10 +31,9 @@ options.UseSqlServer(builder
                         b=>b.MigrationsAssembly("MultiplayerQuizGame")));
 
 builder.Services.AddSignalR();
-builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-//builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IQuizRepository,QuizRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
-builder.Services.AddScoped<IUserService, UserService>();
+
 
 
 builder.Services.AddSwaggerGen();
@@ -79,7 +78,7 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
 });
-app.MapHub<RoomHub>("/roomhub");
+
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

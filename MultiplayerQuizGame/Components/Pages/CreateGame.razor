@@ -1,24 +1,26 @@
 @page "/create-game"
 @attribute [StreamRendering]
 
-@inject IQuizService QuizService
+@inject IQuizRepository QuizRepository
 @inject NavigationManager NavigationManager
 <HeadContent>
     <link rel="stylesheet" href="app_client.css" />
 </HeadContent>
 @if(quizzes != null)
 {
+    <div class="flex gap-4">
     @foreach (var quiz in quizzes)
     {
         <QuizInfoCard QuizInfo="quiz"/>
     }
+    </div>
 }
 
 @code{
-    List<QuizInfo> quizzes;
+    List<QuizDto> quizzes;
 
     protected override async Task OnInitializedAsync()
     {
-        quizzes = await QuizService.GetAvailableQuizzes(); 
+        quizzes = await QuizRepository.GetAvailableQuizzesDto();
     }
 }

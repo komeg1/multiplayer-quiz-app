@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MultiplayerQuizGame.Shared.Models;
 
-namespace MultiplayerQuizGame.Components.Repositories
+namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
 {
     public interface IRoomRepository
     {

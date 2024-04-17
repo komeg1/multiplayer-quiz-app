@@ -14,7 +14,8 @@ namespace MultiplayerQuizGame.Shared.Models
         public int Id { get; set; }
         public string? Description { get; set; }
         public required bool IsActive { get; set; } 
-        public required List<Question_choices> Question_Choices { get; set; }
+        public required List<QuestionChoice> QuestionChoices { get; set; }
+        public List<Quiz> Quizzes { get; set; }
 
     }
 }

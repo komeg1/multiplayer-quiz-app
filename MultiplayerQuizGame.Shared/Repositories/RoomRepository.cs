@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Shared.Data;
 using MultiplayerQuizGame.Shared.Models;
+using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 
-namespace MultiplayerQuizGame.Components.Repositories
+namespace MultiplayerQuizGame.Shared.Repositories
 {
     public class RoomRepository : IRoomRepository
     {

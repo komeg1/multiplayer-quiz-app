@@ -1,4 +1,5 @@
 ﻿using MultiplayerQuizGame.Shared.Models;
+using MultiplayerQuizGame.Shared.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

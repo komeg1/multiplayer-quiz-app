@@ -1,8 +1,11 @@
 ﻿@using System.Timers
+@inject IQuizService QuizService
+@inject IQuizRepository QuizRepository
 
 @page "/quiz/{Id}"
 @rendermode InteractiveWebAssembly
-@inject IQuizService QuizService
+
+
 <h3>Quiz @Id</h3>
 <HeadContent>
     <link rel="stylesheet" href="app_client.css" />
@@ -20,18 +23,18 @@ else
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
 
     }
-    @if (ChosenQuiz != null && !isQuizFinished && !isQuestionFinished)
+    @if (chosenQuiz != null && !isQuizFinished && !isQuestionFinished)
     {
         <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @CountdownText</span>
-        <span>Score: @score/@ChosenQuiz.Questions.Count</span>
+        <span>Score: @score/@chosenQuiz.QuestionCount</span>
         <span>Points: @points</span>
-            <CurrentQuestion Question="ChosenQuiz.Questions[questionNr]" OnCorrectAnswer="IncrementScore" OnQuestionChange="ShowQuestionResult" />
+            <CurrentQuestion Question="currentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
     else if (isQuizFinished)
     {
         <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@ChosenQuiz.Questions.Count</h5>
+        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@chosenQuiz.QuestionCount</h5>
 
     }
     </div>
@@ -42,14 +45,14 @@ else
 @code {
     const int MAX_QUESTION_SCORE = 100;
     const int MAX_QUESTION_SECONDS = 15;
-    const int MAX_RESULT_SECONDS = 10;
+    const int MAX_RESULT_SECONDS = 5;
     const int ONE_SECOND = 1000;
 
     bool isQuestionFinished = false;
     bool isLoaded = false;
     bool isQuizFinished = false;
 
-   
+
     int countdownSeconds = MAX_QUESTION_SECONDS;
     int resultSeconds = MAX_RESULT_SECONDS;
     string CountdownText => $"{countdownSeconds/60:00}:{countdownSeconds}";
@@ -64,19 +67,48 @@ else
     Timer questionTimer = null!;
     Timer resultTimer = null;
 
-    public Quiz ChosenQuiz { get; set; }
+    QuizDto chosenQuiz { get; set; }
+    QuestionDto currentQuestion{ get; set; }
 
     [Parameter]
     public string Id { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
-        ChosenQuiz = await QuizService.GetQuiz(Int32.Parse(Id));
+        chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
+        currentQuestion = await QuizRepository.GetQuestionDto(chosenQuiz.Id, questionNr++);
         isLoaded = true;
         InitTimer(ref questionTimer, OnQuestionTimedEvent);
     }
 
-    public async void IncrementScore()
+
+
+
+    public async void CheckAnswer(QuestionChoiceDto answer)
+    {
+        if(await QuizService.CheckAnswer(currentQuestion.Id, answer) == true)
+        {
+            IncrementScore();
+        }
+            ShowQuestionResult();
+    }
+
+    public async void ChangeQuestion()
+    {
+        if (questionNr < chosenQuiz.QuestionCount)
+        {
+            currentQuestion = await QuizRepository.GetQuestionDto(chosenQuiz.Id, questionNr++);
+            countdownSeconds = 15;
+        }
+        else
+        {
+            isQuizFinished = true;
+            Dispose(questionTimer);
+            Dispose(resultTimer);
+        }
+        StateHasChanged();
+    }
+    public void IncrementScore()
     {
         Console.WriteLine(MAX_QUESTION_SCORE * (countdownSeconds / MAX_QUESTION_SECONDS));
         points += (MAX_QUESTION_SCORE * (float)((float)countdownSeconds / (float)MAX_QUESTION_SECONDS));
@@ -96,22 +128,6 @@ else
         isQuestionFinished = true;
 
     }
-    public async void ChangeQuestion()
-    {
-        if (questionNr < ChosenQuiz.Questions.Count - 1)
-        {
-            questionNr++;
-            countdownSeconds = 15;
-        }
-        else
-        {
-            isQuizFinished = true;
-            Dispose(questionTimer);
-            Dispose(resultTimer);
-        }
-        StateHasChanged();
-    }
-
     //TIMER METHODS
     void InitTimer(ref Timer timer, ElapsedEventHandler elapsedEvent)
     {
@@ -143,7 +159,6 @@ else
         if (countdownSeconds == 0)
         {
             questionTimer.Stop();
-            questionNr++;
             countdownSeconds = MAX_QUESTION_SECONDS;
             ShowQuestionResult();
         }
@@ -153,7 +168,6 @@ else
         });
        
     }
-
     void Dispose(Timer timer)
     {
         timer.Dispose();

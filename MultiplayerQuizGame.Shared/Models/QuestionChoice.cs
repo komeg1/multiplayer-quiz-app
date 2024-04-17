@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MultiplayerQuizGame.Shared.Models
 {
-    public class Question_choices
+    public class QuestionChoice
     {
         public int Id { get; set; }
         public required int QuestionId { get; set;}

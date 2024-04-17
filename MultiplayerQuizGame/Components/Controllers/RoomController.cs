@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MultiplayerQuizGame.Shared.Models;
-using MultiplayerQuizGame.Shared.Services;
+using MultiplayerQuizGame.Shared.Services.Interfaces;
 
 namespace MultiplayerQuizGame.Components.Controllers
 {

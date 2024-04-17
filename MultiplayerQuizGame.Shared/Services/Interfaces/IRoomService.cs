@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MultiplayerQuizGame.Shared.Models;
-namespace MultiplayerQuizGame.Shared.Services
+namespace MultiplayerQuizGame.Shared.Services.Interfaces
 {
     public interface IRoomService
     {
@@ -13,6 +13,6 @@ namespace MultiplayerQuizGame.Shared.Services
         Task<bool> IsCodeUnique(string roomCode);
         Task<string> GenerateRoomCode();
 
-    
+
     }
 }

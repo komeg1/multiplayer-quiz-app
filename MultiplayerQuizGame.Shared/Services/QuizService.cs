@@ -1,47 +1,39 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MultiplayerQuizGame.Shared.Data;
-using MultiplayerQuizGame.Shared.Models;
+﻿using MultiplayerQuizGame.Shared.Models.DTO;
+using MultiplayerQuizGame.Shared.Repositories.Interfaces;
+using MultiplayerQuizGame.Shared.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MultiplayerQuizGame.Shared.Services
 {
     public class QuizService : IQuizService
     {
-        private readonly DataContext _dataContext;
-
-        public QuizService(DataContext dataContext) 
-        { 
-            _dataContext = dataContext;
-        }
-        public async Task<List<QuizInfo>> GetAvailableQuizzes()
+        private readonly IQuizRepository _quizRepository;
+        public QuizService(IQuizRepository quizRepository) 
         {
-            var quizzesWithQuestionCount = await _dataContext.Quizzes
-            .Select(q => new QuizInfo
-            {
-                Quiz = q,
-                QuestionCount = q.Questions.Count()
-            })
-            .ToListAsync();
-
-            return quizzesWithQuestionCount;
+            _quizRepository = quizRepository;
         }
 
-        public async Task<Quiz> GetQuiz(int id)
+        public async Task<bool> CheckAnswer(int questionId, QuestionChoiceDto pickedAnswer)
         {
-            
-            var quiz = await _dataContext.Quizzes.
-                Where(q => q.Id == id).
-                Include(q=>q.Questions).
-                ThenInclude(q=>q.Question_Choices).
-                FirstOrDefaultAsync();
+            var question = await _quizRepository.GetQuestion(questionId);
 
-            return quiz;
-            
+            if (question == null)
+                throw new KeyNotFoundException();
+
+            var correctAnswer = question.QuestionChoices.Find(q => q.IsTrue.Equals(true));
+            if (correctAnswer == null)
+                throw new KeyNotFoundException();
+
+            if (correctAnswer.Id == pickedAnswer.Id)
+                return true;
+
+            return false;
+                 
+
         }
     }
 }
