@@ -42,5 +42,10 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             var result = await _httpClient.GetFromJsonAsync<QuestionDto>($"/api/quiz/question/{questionId}");
             return result;
         }
+
+        public Task<Quiz> GetQuiz(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

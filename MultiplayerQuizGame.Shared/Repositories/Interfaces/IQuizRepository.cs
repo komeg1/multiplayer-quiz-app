@@ -11,6 +11,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
     public interface IQuizRepository
     {
         Task<Question> GetQuestion(int questionId);
+        Task<Quiz> GetQuiz(int id);
 
         //DTO
         Task<List<QuizDto>> GetAvailableQuizzesDto();

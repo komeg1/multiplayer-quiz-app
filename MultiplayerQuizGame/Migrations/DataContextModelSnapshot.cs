@@ -38,7 +38,7 @@ namespace MultiplayerQuizGame.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Question");
                 });
 
             modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.QuestionChoice", b =>
@@ -63,7 +63,7 @@ namespace MultiplayerQuizGame.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Question_Choices");
+                    b.ToTable("QuestionChoice");
                 });
 
             modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Quiz", b =>
@@ -86,7 +86,7 @@ namespace MultiplayerQuizGame.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Quizzes");
+                    b.ToTable("Quiz");
                 });
 
             modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.Room", b =>
@@ -109,7 +109,7 @@ namespace MultiplayerQuizGame.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Room");
                 });
 
             modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.User", b =>
@@ -124,7 +124,7 @@ namespace MultiplayerQuizGame.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserEmail")
+                    b.Property<string>("PasswordSalt")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -134,7 +134,36 @@ namespace MultiplayerQuizGame.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("User");
+                });
+
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.UserQuizStamp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuizId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserQuizStamp");
                 });
 
             modelBuilder.Entity("QuestionQuiz", b =>
@@ -191,6 +220,25 @@ namespace MultiplayerQuizGame.Migrations
                         .IsRequired();
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("MultiplayerQuizGame.Shared.Models.UserQuizStamp", b =>
+                {
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.Quiz", "Quiz")
+                        .WithMany()
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MultiplayerQuizGame.Shared.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("QuestionQuiz", b =>

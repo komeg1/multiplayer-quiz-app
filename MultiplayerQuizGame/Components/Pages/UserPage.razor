@@ -1,0 +1,29 @@
+﻿@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "LoggedUser")]
+
+@page "/user-page"
+
+<GameHistory UserId="int.Parse(_userId)"/>
+
+
+@code {
+
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+    private string _username;
+    private string _userId;
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            _claims = user.Claims;
+            _username = _claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value;
+            _userId   = _claims.FirstOrDefault(c => c.Type is "id")?.Value;
+        }
+    }
+
+
+}

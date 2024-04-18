@@ -17,7 +17,7 @@ namespace MultiplayerQuizGame.Shared.Repositories
 
         public async Task<Question> GetQuestion(int quizId, int questionNr)
         {
-            var questions = await _dataContext.Quizzes.
+            var questions = await _dataContext.Quiz.
                 Include(q => q.Questions).
                 ThenInclude(q => q.QuestionChoices).
                 Where(q => q.Id == quizId).
@@ -34,19 +34,31 @@ namespace MultiplayerQuizGame.Shared.Repositories
         }
         public async Task<Question> GetQuestion(int questionId)
         {
-            var question = await _dataContext.Questions.
+            var question = await _dataContext.Question.
                 Include(q => q.QuestionChoices).
                 Where(q => q.Id == questionId).
                 FirstOrDefaultAsync();
 
             return question;
         }
+        public async Task<Quiz> GetQuiz(int id)
+        {
+
+            var quiz = await _dataContext.Quiz.
+                Where(q => q.Id == id).
+                Include(q => q.Questions).
+                FirstOrDefaultAsync();
+
+
+            return quiz;
+
+        }
 
 
         // DTO methods
         public async Task<List<QuizDto>> GetAvailableQuizzesDto()
         {
-            var quizzesWithQuestionCount = await _dataContext.Quizzes.
+            var quizzesWithQuestionCount = await _dataContext.Quiz.
                 Include(q=>q.Questions).
                 Select(q => new QuizDto
                 {
@@ -64,7 +76,7 @@ namespace MultiplayerQuizGame.Shared.Repositories
         public async Task<QuizDto> GetQuizDto(int id)
         {
 
-            var quiz = await _dataContext.Quizzes.
+            var quiz = await _dataContext.Quiz.
                 Where(q => q.Id == id).
                 Include(q => q.Questions).
                 Select(q => new QuizDto

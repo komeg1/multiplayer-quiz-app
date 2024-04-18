@@ -1,0 +1,43 @@
+﻿@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@page "/register"
+
+<EditForm method="post" OnSubmit="HandleRegister" Model="Credentials" FormName="RegisterUser">
+    <InputText @bind-Value="Credentials.Username" placeholder="Username" class="form-control"/>
+    <InputText @bind-Value="Credentials.Password" placeholder="Password" type="password" class="form-control"/>
+    <button type="submit" class=" text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Sign in</button>
+</EditForm>
+<div>
+    @if (_user != null)
+    {
+        @if (_user.Username == String.Empty)
+        {
+            <span class="font-bold text-red-500">Username occupied</span>
+        }
+        else
+        {
+            <span class="font-bold text-green-500">Registered successfully</span>
+        }
+    }
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Credentials Credentials { get; set; } = new Credentials();
+
+
+
+    User _user = null;
+
+    async Task HandleRegister()
+    {
+        _user = await UserService.Register(Credentials);
+        StateHasChanged();
+    }
+
+    void ReturnHomePage() => NavigationManager.NavigateTo("/");
+
+}

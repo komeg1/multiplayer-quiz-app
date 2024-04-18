@@ -10,8 +10,13 @@ builder.Services.AddScoped(http => new HttpClient
 {
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
 });
-builder.Services.AddScoped<IRoomService, ClientRoomService>();
 builder.Services.AddScoped<IQuizRepository, ClientQuizRepository>();
+builder.Services.AddScoped<IUserRepository, ClientUserRepository>();
+builder.Services.AddScoped<IRoomService, ClientRoomService>();
 builder.Services.AddScoped<IQuizService, ClientQuizService>();
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddOptions();
+builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();

@@ -18,14 +18,14 @@ namespace MultiplayerQuizGame.Shared.Repositories
         }
         public async Task<bool> AddRoomAsync(Room room)
         {
-            _context.Rooms.Add(room);
+            _context.Room.Add(room);
             await _context.SaveChangesAsync();
             return true;
         }
         public async Task<Room> GetRoomByCodeAsync(string roomCode)
         {
             Console.WriteLine($"Room code: {roomCode}");
-            return await _context.Rooms.FirstOrDefaultAsync(r => r.Room_Code == roomCode).ConfigureAwait(false);
+            return await _context.Room.FirstOrDefaultAsync(r => r.Room_Code == roomCode).ConfigureAwait(false);
         }
     }
 }

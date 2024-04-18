@@ -7,8 +7,8 @@ using System.Security.Claims;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 using MultiplayerQuizGame.Shared.Services;
 using MultiplayerQuizGame.Shared.Services.Interfaces;
-using MultiplayerQuizGame.Shared.Repositories;
-using MultiplayerQuizGame.Shared.Repositories.Interfaces;
+using Auth0BlazorDemo.Identity;
+using Microsoft.AspNetCore.Components.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -32,8 +32,11 @@ options.UseSqlServer(builder
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IQuizRepository,QuizRepository>();
-builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IUserRepository,UserRepository>();
 
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<AuthenticationStateProvider, PersistingAuthenticationStateProvider>();
 
 
 builder.Services.AddSwaggerGen();
@@ -43,7 +46,10 @@ builder.Services.AddControllersWithViews().AddNewtonsoftJson(x =>
 });
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
-				AddCookie(x => x.LoginPath = "/login");
+				AddCookie(x => {
+                    x.LoginPath = "/login";
+                    x.LogoutPath = "/logout";
+                    });
 builder.Services.AddAuthorization(options =>
 {
 	options.AddPolicy("LoggedUserOnly", policy => policy.RequireClaim(ClaimTypes.Role, "LoggedUser"));

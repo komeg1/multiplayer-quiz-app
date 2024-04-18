@@ -1,9 +1,12 @@
 ﻿@using System.Timers
+@using System.Security.Claims
 @inject IQuizService QuizService
+@inject IUserRepository UserRepository
 @inject IQuizRepository QuizRepository
 
 @page "/quiz/{Id}"
 @rendermode InteractiveWebAssembly
+
 
 
 <h3>Quiz @Id</h3>
@@ -23,18 +26,18 @@ else
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
 
     }
-    @if (chosenQuiz != null && !isQuizFinished && !isQuestionFinished)
+    @if (_chosenQuiz != null && !isQuizFinished && !isQuestionFinished)
     {
         <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @CountdownText</span>
-        <span>Score: @score/@chosenQuiz.QuestionCount</span>
+        <span>Score: @score/@_chosenQuiz.QuestionCount</span>
         <span>Points: @points</span>
-            <CurrentQuestion Question="currentQuestion" OnAnswerCheck="CheckAnswer" />
+            <CurrentQuestion Question="_currentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
     else if (isQuizFinished)
     {
         <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@chosenQuiz.QuestionCount</h5>
+        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
 
     }
     </div>
@@ -64,49 +67,64 @@ else
     int questionNr = 0;
 
 
-    Timer questionTimer = null!;
-    Timer resultTimer = null;
+    private Timer _questionTimer = null!;
+    private Timer _resultTimer = null;
 
-    QuizDto chosenQuiz { get; set; }
-    QuestionDto currentQuestion{ get; set; }
-
+    private QuizDto? _chosenQuiz;
+    private QuestionDto? _currentQuestion;
+    private UserQuizStampDto? _stampDto;
+    private string? _userId;
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+    [CascadingParameter]
+    private Task<AuthenticationState>? _authenticationState { get; set; }
     [Parameter]
     public string Id { get; set; }
-
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
-        currentQuestion = await QuizRepository.GetQuestionDto(chosenQuiz.Id, questionNr++);
-        isLoaded = true;
-        InitTimer(ref questionTimer, OnQuestionTimedEvent);
-    }
+        _chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
+        _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
 
+        var authState = await _authenticationState;
+        var user = authState.User;
 
-
-
-    public async void CheckAnswer(QuestionChoiceDto answer)
-    {
-        if(await QuizService.CheckAnswer(currentQuestion.Id, answer) == true)
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
         {
-            IncrementScore();
+            _claims = user.Claims;
+            _userId = user.FindFirst(c => c.Type is "id")?.Value;
+
+            _stampDto = await UserRepository.SaveQuizStamp(new UserQuizStampDto
+                {
+                    UserId = int.Parse(_userId),
+                    QuizId = _chosenQuiz.Id,
+
+                });
         }
-            ShowQuestionResult();
+        InitTimer(ref _questionTimer, OnQuestionTimedEvent);
+    }
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            isLoaded = true;
+        }
+
     }
 
     public async void ChangeQuestion()
     {
-        if (questionNr < chosenQuiz.QuestionCount)
+        if (questionNr < _chosenQuiz.QuestionCount)
         {
-            currentQuestion = await QuizRepository.GetQuestionDto(chosenQuiz.Id, questionNr++);
-            countdownSeconds = 15;
+            _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
+            countdownSeconds = MAX_QUESTION_SECONDS;
         }
         else
         {
             isQuizFinished = true;
-            Dispose(questionTimer);
-            Dispose(resultTimer);
+            await UpdateStampPoints();
+            Dispose(_questionTimer);
+            Dispose(_resultTimer);
         }
-        StateHasChanged();
+
     }
     public void IncrementScore()
     {
@@ -117,15 +135,37 @@ else
     }
     public async void ShowQuestionResult()
     {
-        if (resultTimer is null)
+
+        if (_resultTimer is null)
         {
-            InitTimer(ref resultTimer, OnResultTimedEvent);
+            InitTimer(ref _resultTimer, OnResultTimedEvent);
         }
         else
         {
-            resultTimer.Start();
+            _resultTimer.Start();
         }
         isQuestionFinished = true;
+
+    }
+
+    public async void CheckAnswer(QuestionChoiceDto answer)
+    {
+        if (await QuizService.CheckAnswer(_currentQuestion.Id, answer) == true)
+        {
+            IncrementScore();
+        }
+        ShowQuestionResult();
+    }
+
+    public async Task UpdateStampPoints()
+    {
+        var authState = await _authenticationState;
+        var user = authState.User;
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            _stampDto.Points = (int)points;
+            await UserRepository.SaveQuizStamp(_stampDto);
+        }
 
     }
     //TIMER METHODS
@@ -136,16 +176,16 @@ else
         timer.AutoReset = true;
         timer.Enabled = true;
     }
-    private void OnResultTimedEvent(object? sender, ElapsedEventArgs e)
+    private async void OnResultTimedEvent(object? sender, ElapsedEventArgs e)
     {
         resultSeconds--;
         if (resultSeconds == 0)
         {
-            resultTimer.Stop();
+            _resultTimer.Stop();
             isQuestionFinished = false;
             resultSeconds = MAX_RESULT_SECONDS;
-            questionTimer.Start();
-            ChangeQuestion();
+            _questionTimer.Start();
+            
         }
         InvokeAsync(() =>
         {
@@ -158,7 +198,7 @@ else
 
         if (countdownSeconds == 0)
         {
-            questionTimer.Stop();
+            _questionTimer.Stop();
             countdownSeconds = MAX_QUESTION_SECONDS;
             ShowQuestionResult();
         }
@@ -170,7 +210,7 @@ else
     }
     void Dispose(Timer timer)
     {
-        timer.Dispose();
+        timer?.Dispose();
     }
 
 

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MultiplayerQuizGame.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,11 +8,13 @@ namespace MultiplayerQuizGame.Shared.Data
         public DataContext(DbContextOptions<DataContext> options) 
         : base(options){}
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Question> Questions { get; set; }
-        public DbSet<QuestionChoice> Question_Choices { get; set; }
-        public DbSet<Quiz> Quizzes { get; set; }
-        public DbSet<Room> Rooms { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Question> Question { get; set; }
+        public DbSet<QuestionChoice> QuestionChoice { get; set; }
+        public DbSet<Quiz> Quiz { get; set; }
+        public DbSet<Room> Room { get; set; }
+        public DbSet<UserQuizStamp> UserQuizStamp { get; set;}
+
         
     }
 }

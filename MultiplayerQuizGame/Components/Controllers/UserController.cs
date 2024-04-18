@@ -1,85 +1,58 @@
-﻿//using Microsoft.AspNetCore.Authentication.Cookies;
-//using Microsoft.AspNetCore.Authentication;
-//using Microsoft.AspNetCore.Mvc;
-//using MultiplayerQuizGame.Shared.Services;
-//using MultiplayerQuizGame.Shared.Models.DTO;
-//using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using MultiplayerQuizGame.Shared.Services;
+using MultiplayerQuizGame.Shared.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
+using MultiplayerQuizGame.Shared.Services.Interfaces;
+using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 
-//namespace MultiplayerQuizGame.Components.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class UserController : Controller
-//    {
-//        private readonly IUserService _userService;
+namespace MultiplayerQuizGame.Components.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : Controller
+    {
 
-//        public UserController(IUserService userService)
-//        {
-//            _userService = userService;
-//        }
+        private readonly IUserRepository _userRepository;
 
-
-//        [HttpPost("register")]
-//        public async Task<IActionResult> Register([FromBody] RegisterDto resource)
-//        {
-//            try
-//            {
-//                var response = await _userService.Register(resource);
-//                return Ok(response);
-//            }
-//            catch (Exception e)
-//            {
-//                return BadRequest(new { ErrorMessage = e.Message });
-//            }
-//        }
-
-//        [HttpPost("login")]
-//        public async Task<IActionResult> Login([FromBody] LoginDto resource)
-//        {
-//            try
-//            {
-//                var response = await _userService.Login(resource);
-//                return Ok(response);
-//            }
-//            catch (Exception e)
-//            {
-//                return BadRequest(new { ErrorMessage = e.Message });
-//            }
-//        }
-
-//        [Authorize("LoggedUserOnly")]
-//        [Route("/logout")]
-//        [NonAction]
-//        public async Task Logout()
-//        {
-//            var prop = new AuthenticationProperties()
-//            {
-//                RedirectUri = "/",
-//            };
-//            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, prop);
+        public UserController(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
 
 
-//        }
+        [HttpGet]
+        [Authorize("LoggedUserOnly")]
+        [Route("/logout")]
+        public async Task Logout()
+        {
+            var prop = new AuthenticationProperties()
+            {
+                RedirectUri = "/",
+            };
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, prop);
+        }
 
-//        [Authorize("LoggedUserOnly")]
-//        [HttpPost("{id}/stamp")]
-//        public async Task<IActionResult> SaveUserStamp([FromBody] UserQuizStampDto dto)
-//        {
-            
-//            try
-//            {
-//                await _userService.SaveQuizStamp(dto);
-//                return Ok();
-//            }
-//            catch (Exception e)
-//            {
-//                return BadRequest(new { ErrorMessage = e.Message });
-//            }
-//        }
+        [HttpPost]
+        [Authorize("LoggedUserOnly")]
+        [Route("{userId}/stamp")]
+        public async Task<IActionResult> SaveQuizStamp(int userId, [FromBody] UserQuizStampDto stampDto)
+        {
+            try
+            {
+                var response = await _userRepository.SaveQuizStamp(stampDto);
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { ErrorMessage = e.Message });
+            }
+        }
 
 
 
 
-//    }
+    }
 
-//}
+}

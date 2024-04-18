@@ -12,9 +12,9 @@ namespace MultiplayerQuizGame.Shared.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int Id { get; set; }
-        public required string Username { get; set; }
-        public required string PasswordHash { get; set; }
-        public required string UserEmail { get; set; }
+        public string Username { get; set; }
+        public string PasswordHash { get; set; }
+        public string PasswordSalt { get; set; }
         public List<Room>? Rooms { get; set; }
 
     }
