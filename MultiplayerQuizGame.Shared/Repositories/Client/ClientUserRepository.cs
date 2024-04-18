@@ -32,11 +32,28 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             throw new NotImplementedException();
         }
 
-        public async Task<UserQuizStampDto> SaveQuizStamp(UserQuizStampDto stampDto)
+        public Task<List<UserQuizStampDto>> GetUserGameHistory(int id)
         {
-            var result = await _httpClient.PostAsJsonAsync<UserQuizStampDto>($"/api/user/{stampDto.UserId}/stamp", stampDto);
+            throw new NotImplementedException();
+        }
+
+        public async Task<UserQuizStampDto> SaveQuizStamp(int quizId, int userId = 0)
+        {
+            UserQuizStampDto stampDto = new UserQuizStampDto
+            {
+                UserId = userId,
+                QuizId = quizId,
+            };
+            var result = await _httpClient.PostAsJsonAsync<UserQuizStampDto>($"/api/user/stamp", stampDto);
 
             return await result.Content.ReadFromJsonAsync<UserQuizStampDto>();
+        }
+
+        public async Task UpdateStampPoints(int stampId, int points)
+        {
+            var result = await _httpClient.PostAsJsonAsync<int>($"/api/stamp/{stampId}", points);
+            var res = result.Content.ReadAsStringAsync();
+            return;
         }
 
     }

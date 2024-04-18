@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Components;
 using MultiplayerQuizGame.Shared.Data;
-using MultiplayerQuizGame.Shared.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
-using MultiplayerQuizGame.Shared.Services;
 using MultiplayerQuizGame.Shared.Services.Interfaces;
-using Auth0BlazorDemo.Identity;
+
 using Microsoft.AspNetCore.Components.Authorization;
+using MultiplayerQuizGame.Shared.Services.Server;
+using MultiplayerQuizGame.Shared.Repositories.Server;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -36,7 +36,6 @@ builder.Services.AddScoped<IUserRepository,UserRepository>();
 
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingAuthenticationStateProvider>();
 
 
 builder.Services.AddSwaggerGen();

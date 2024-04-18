@@ -1,9 +1,36 @@
-﻿<h3>GameHistory</h3>
+﻿@inject IUserRepository UserRepository
+<h3>GameHistory</h3>
+
+@if(_isLoaded)
+{
+    <ul>
+    @foreach(var entry in _gameHistory)
+    {
+        <li>
+                <span class="text-xl text-black">QuizId: @entry.QuizId, Points: @entry.Points, Date: @entry.DateTime</span>
+        </li>
+    }
+    </ul>
+}
 
 @code {
     [Parameter]
     public int UserId { get; set; }
 
+    private List<UserQuizStampDto> _gameHistory = new List<UserQuizStampDto>();
+    private bool _isLoaded = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _gameHistory = await UserRepository.GetUserGameHistory(UserId);
+        _isLoaded = true;
+    }
+
     
+    }
+
+
+
+
 
 }

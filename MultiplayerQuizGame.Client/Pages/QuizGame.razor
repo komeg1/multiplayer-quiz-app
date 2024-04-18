@@ -1,11 +1,10 @@
-﻿@using System.Timers
-@using System.Security.Claims
+﻿@page "/quiz/{Id}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+@using System.Timers
 @inject IQuizService QuizService
 @inject IUserRepository UserRepository
 @inject IQuizRepository QuizRepository
-
-@page "/quiz/{Id}"
-@rendermode InteractiveWebAssembly
+@inject IJSRuntime Js
 
 
 
@@ -20,7 +19,13 @@
 else
 {
     <div class="w-full p-8 bg-white rounded-lg shadow-lg">
-    @if(isQuestionFinished)
+     @if (isQuizFinished)
+      {
+        <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
+        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
+
+     }
+    else if(isQuestionFinished)
     {
             <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @ResultCountdownText</span>
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
@@ -34,12 +39,7 @@ else
             <CurrentQuestion Question="_currentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
-    else if (isQuizFinished)
-    {
-        <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
-
-    }
+    
     </div>
 
 
@@ -73,38 +73,30 @@ else
     private QuizDto? _chosenQuiz;
     private QuestionDto? _currentQuestion;
     private UserQuizStampDto? _stampDto;
-    private string? _userId;
-    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
-    [CascadingParameter]
-    private Task<AuthenticationState>? _authenticationState { get; set; }
+
+
     [Parameter]
     public string Id { get; set; }
     protected override async Task OnInitializedAsync()
     {
         _chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
         _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
-
-        var authState = await _authenticationState;
-        var user = authState.User;
-
-        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        try
         {
-            _claims = user.Claims;
-            _userId = user.FindFirst(c => c.Type is "id")?.Value;
-
-            _stampDto = await UserRepository.SaveQuizStamp(new UserQuizStampDto
-                {
-                    UserId = int.Parse(_userId),
-                    QuizId = _chosenQuiz.Id,
-
-                });
+            _stampDto = await UserRepository.SaveQuizStamp(_chosenQuiz.Id);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("uzytkownik niezalogowany");
+        }
+
         InitTimer(ref _questionTimer, OnQuestionTimedEvent);
     }
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
         {
+            await Js.InvokeVoidAsync("window.initializeFlowbite");
             isLoaded = true;
         }
 
@@ -115,15 +107,20 @@ else
         if (questionNr < _chosenQuiz.QuestionCount)
         {
             _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
-            countdownSeconds = MAX_QUESTION_SECONDS;
+
         }
         else
         {
+            isQuestionFinished = false;
             isQuizFinished = true;
-            await UpdateStampPoints();
             Dispose(_questionTimer);
             Dispose(_resultTimer);
+            if (_stampDto != null)
+                UpdateStampPoints((int)points);
+            StateHasChanged();
         }
+
+
 
     }
     public void IncrementScore()
@@ -145,6 +142,7 @@ else
             _resultTimer.Start();
         }
         isQuestionFinished = true;
+        ChangeQuestion();
 
     }
 
@@ -157,15 +155,9 @@ else
         ShowQuestionResult();
     }
 
-    public async Task UpdateStampPoints()
+    public async Task UpdateStampPoints(int points)
     {
-        var authState = await _authenticationState;
-        var user = authState.User;
-        if (user.Identity is not null && user.Identity.IsAuthenticated)
-        {
-            _stampDto.Points = (int)points;
-            await UserRepository.SaveQuizStamp(_stampDto);
-        }
+        UserRepository.UpdateStampPoints(_stampDto.Id, points);
 
     }
     //TIMER METHODS
@@ -182,10 +174,12 @@ else
         if (resultSeconds == 0)
         {
             _resultTimer.Stop();
-            isQuestionFinished = false;
+
             resultSeconds = MAX_RESULT_SECONDS;
-            _questionTimer.Start();
-            
+            countdownSeconds = MAX_QUESTION_SECONDS;
+            _questionTimer.Start();            
+            isQuestionFinished = false;
+
         }
         InvokeAsync(() =>
         {

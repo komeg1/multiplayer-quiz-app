@@ -4,7 +4,7 @@ using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Models.DTO;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 using Mapster;
-namespace MultiplayerQuizGame.Shared.Repositories
+namespace MultiplayerQuizGame.Shared.Repositories.Server
 {
     public class QuizRepository : IQuizRepository
     {
@@ -23,7 +23,7 @@ namespace MultiplayerQuizGame.Shared.Repositories
                 Where(q => q.Id == quizId).
                 Select(q => q.Questions).
                FirstOrDefaultAsync();
-            if(questions is null)
+            if (questions is null)
             {
                 return null!;
             }
@@ -59,7 +59,7 @@ namespace MultiplayerQuizGame.Shared.Repositories
         public async Task<List<QuizDto>> GetAvailableQuizzesDto()
         {
             var quizzesWithQuestionCount = await _dataContext.Quiz.
-                Include(q=>q.Questions).
+                Include(q => q.Questions).
                 Select(q => new QuizDto
                 {
                     Id = q.Id,

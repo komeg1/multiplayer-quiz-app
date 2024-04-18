@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiplayerQuizGame.Shared.Services
+namespace MultiplayerQuizGame.Shared.Services.Server
 {
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
-        public QuizService(IQuizRepository quizRepository) 
+        public QuizService(IQuizRepository quizRepository)
         {
             _quizRepository = quizRepository;
         }
@@ -32,7 +32,7 @@ namespace MultiplayerQuizGame.Shared.Services
                 return true;
 
             return false;
-                 
+
 
         }
     }

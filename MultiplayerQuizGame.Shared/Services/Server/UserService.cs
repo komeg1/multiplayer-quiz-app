@@ -10,13 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiplayerQuizGame.Shared.Services
+namespace MultiplayerQuizGame.Shared.Services.Server
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
         private readonly string _pepper = "BB3#$ak*";
         private readonly int _iteration = 3;
+
 
         public UserService(IUserRepository userRepository)
         {
@@ -37,7 +38,7 @@ namespace MultiplayerQuizGame.Shared.Services
             };
             user.PasswordHash = PasswordHasher.ComputeHash(registerCredentials.Password, user.PasswordSalt, _pepper, _iteration);
             await _userRepository.AddUser(user);
-            
+
 
             return user;
         }
