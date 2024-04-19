@@ -1,13 +1,30 @@
 @page "/create-game"
+@page "/create-game/{Mode}"
 @attribute [StreamRendering]
 
 @inject IQuizRepository QuizRepository
 @inject NavigationManager NavigationManager
 
-@if(quizzes != null)
+@if(Mode == null)
+{
+    <div class="=flex gap-4">
+        <a href="/create-game/singleplayer" class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
+            Singleplayer
+        </a>
+        <a href="/create-game/multiplayer" class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
+            Multiplayer
+        </a>
+    </div>
+}
+@if (Mode == "multiplayer")
+{
+    <h1>Lobby</h1>
+
+}
+@if(_quizzes != null && Mode == "singleplayer")
 {
     <div class="flex gap-4">
-    @foreach (var quiz in quizzes)
+    @foreach (var quiz in _quizzes)
     {
         <QuizInfoCard QuizInfo="quiz"/>
     }
@@ -15,10 +32,11 @@
 }
 
 @code{
-    List<QuizDto> quizzes;
-
+    [Parameter]
+    public string Mode { get; set; }
+    private List<QuizDto> _quizzes;
     protected override async Task OnInitializedAsync()
     {
-        quizzes = await QuizRepository.GetAvailableQuizzesDto();
+        _quizzes = await QuizRepository.GetAvailableQuizzesDto();
     }
 }

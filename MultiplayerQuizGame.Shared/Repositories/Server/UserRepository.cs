@@ -80,6 +80,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public async Task<List<UserQuizStampDto>> GetUserGameHistory(int userId)
         {
             var result = await _context.UserQuizStamp.
+                Include(s=>s.Quiz).
                 Where(s => s.User.Id == userId).
                 ToListAsync();
 
@@ -88,6 +89,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             foreach (var entry in result )
             {
                 temp = entry.Adapt<UserQuizStampDto>();
+                temp.QuizId = entry.Quiz.Id;
                 dtos.Add(temp);
             }
 
