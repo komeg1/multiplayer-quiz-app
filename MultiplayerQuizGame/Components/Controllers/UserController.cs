@@ -9,6 +9,7 @@ using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 using MultiplayerQuizGame.Shared.Models;
 using System.Security.Claims;
 using MultiplayerQuizGame.Shared.Repositories;
+using Mapster;
 
 namespace MultiplayerQuizGame.Components.Controllers
 {
@@ -76,6 +77,20 @@ namespace MultiplayerQuizGame.Components.Controllers
             {
                 return BadRequest(new { ErrorMessage = e.Message });
             }
+        }
+
+        [HttpGet]
+        [Authorize("LoggedUserOnly")]
+        [Route("")]
+        public async Task<IActionResult> GetLoggedUser()
+        {
+            if (HttpContext.User.Identity is not null && HttpContext.User.Identity.IsAuthenticated)
+            {
+                var userId = int.Parse(HttpContext.User.FindFirst(c => c.Type is "id")?.Value);
+                var user = await _userRepository.GetUserAsync(userId);
+                return Ok(user.Adapt<UserDto>());
+            }
+            return Ok(null);
         }
 
 

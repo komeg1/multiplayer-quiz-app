@@ -22,12 +22,25 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             throw new NotImplementedException();
         }
 
-        public Task<User> GetUser(int id)
+        public async Task<UserDto> GetLoggedUser()
+        {
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<UserDto>("/api/user");
+                return result!;
+            }
+            catch (Exception ex)
+            {
+                return null!;
+            }
+            
+        }
+        public Task<User> GetUserAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> GetUser(string username)
+        public Task<User> GetUserAsync(string username)
         {
             throw new NotImplementedException();
         }

@@ -1,0 +1,50 @@
+﻿@page "/join-game"
+@inject NavigationManager NavigationManager
+@inject IUserRepository UserRepository
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+@if (_loggedUser == null)
+{
+    <InputText @bind-Value=@_userName></InputText>
+}
+<InputText @bind-Value=@_roomCodeInput></InputText>
+
+<h3>Rooms:</h3>
+@if (_openRooms != null)
+{
+    foreach (var room in _openRooms)
+    {
+        <li>@room.RoomCode <button @onclick="() => JoinRoom(room.RoomCode)">
+            Join Room
+        </button></li>
+    }
+}
+@code {
+    private List<RoomDto>? _openRooms;
+    private string? _roomCodeInput;
+    private string? _userName;
+    private UserDto? _loggedUser;
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loggedUser = await UserRepository.GetLoggedUser();
+
+        if (_loggedUser != null)
+            _userName = _loggedUser.Username;
+
+        _hubConnection = new HubConnectionBuilder().
+            WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
+            Build();
+
+        _hubConnection.On<List<RoomDto>>("OpenRooms", (list) =>
+        {
+            Console.WriteLine($"Room count = {list.Count}");
+            _openRooms = list;
+            StateHasChanged();
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    void JoinRoom(string roomCode) => NavigationManager.NavigateTo($"lobby/{roomCode}");
+}

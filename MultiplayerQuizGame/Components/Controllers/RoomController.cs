@@ -14,11 +14,6 @@ namespace MultiplayerQuizGame.Components.Controllers
         {
             _roomService = roomService;
         }
-        [HttpPost]
-        public async void CreateRoom(string roomCode)
-        {
-            //await _roomService.CreateRoom(roomCode);
-        }
 
         [HttpGet]
         public async Task<ActionResult<Room>> GetRoom(string roomCode)

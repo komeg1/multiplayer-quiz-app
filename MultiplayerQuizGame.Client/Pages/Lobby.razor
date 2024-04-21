@@ -1,0 +1,81 @@
+﻿@page "/lobby/{RoomCode}"
+@inject NavigationManager NavigationManager
+@inject IUserRepository UserRepository
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+
+<span>Room @RoomCode</span>
+@if(_isNotConnected)
+{
+    <h2 class="text-red-200">Lobby is full!</h2>
+}
+
+@if(_currentRoom != null)
+{
+    foreach(var user in _players.Users)
+    {
+        <li>
+            @user.Username
+        </li>
+    }
+    foreach (var user in _players.Guests)
+    {
+        <li>
+            @user.Username
+        </li>
+    }
+
+   
+}
+
+@code {
+    [Parameter]
+    public string RoomCode { get; set; }
+
+    private HubConnection? _hubConnection;
+    private RoomDto? _currentRoom;
+    private UserDto? _loggedUser = null;
+    private Guest? _guest = null;
+    private string? _userName = string.Empty;
+    private bool _isNotConnected = false;
+    private PlayersInLobby _players = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loggedUser = await UserRepository.GetLoggedUser();
+
+        _hubConnection = new HubConnectionBuilder().
+            WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
+            Build();
+        _hubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
+        {
+            _players = players;
+            StateHasChanged();
+        });
+
+        await _hubConnection.StartAsync();
+
+        if (_loggedUser == null)
+            _guest = new Guest { ConnectionId = _hubConnection.ConnectionId, Username = _hubConnection.ConnectionId };
+
+
+        //Create Room in SignalR if the client is host
+        _currentRoom = await _hubConnection.InvokeAsync<RoomDto>("OpenRoom", RoomCode, _loggedUser, _guest);
+        //Else join the room
+        if(_currentRoom == null)
+        {
+            _currentRoom = await _hubConnection.InvokeAsync<RoomDto>("JoinRoom", RoomCode, _loggedUser, _guest);
+            if(_currentRoom == null)
+            {
+                _isNotConnected = true;
+            }
+
+        }
+
+
+
+    }
+
+
+    
+}

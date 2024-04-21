@@ -7,11 +7,12 @@ namespace MultiplayerQuizGame.Shared.Services.Interfaces
 {
     public interface IRoomService
     {
-        Task<Room> CreateRoom();
+        Task<Room> CreateRoom(int quizId);
         Task<Room> GetRoom(string roomCode);
         Task<Room> CloseRoom(string roomCode);
         Task<bool> IsCodeUnique(string roomCode);
         Task<string> GenerateRoomCode();
+        
 
 
     }

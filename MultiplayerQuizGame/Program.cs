@@ -9,6 +9,7 @@ using MultiplayerQuizGame.Shared.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using MultiplayerQuizGame.Shared.Services.Server;
 using MultiplayerQuizGame.Shared.Repositories.Server;
+using MultiplayerQuizGame.Components.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,20 +31,19 @@ options.UseSqlServer(builder
                         .GetConnectionString("DefaultDbConnection"),
                         b=>b.MigrationsAssembly("MultiplayerQuizGame")));
 
-builder.Services.AddSignalR();
 builder.Services.AddScoped<IQuizRepository,QuizRepository>();
-builder.Services.AddScoped<IUserRepository,UserRepository>();
-
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoomService,RoomService>();
 
-
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews().AddNewtonsoftJson(x =>
 {
     x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).
 				AddCookie(x => {
                     x.LoginPath = "/login";
@@ -72,8 +72,9 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHub<GameHub>("/gamehub");
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();

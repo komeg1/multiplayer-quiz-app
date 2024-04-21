@@ -4,10 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using MultiplayerQuizGame.Shared.Models.Interfaces;
 
 namespace MultiplayerQuizGame.Shared.Models
 {
-    public class User
+    public class User : IPlayer
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]

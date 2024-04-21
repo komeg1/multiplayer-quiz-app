@@ -15,8 +15,7 @@ namespace MultiplayerQuizGame.Migrations
                 name: "FK_Questions_Quizzes_QuizId",
                 table: "Questions");
 
-            migrationBuilder.DropTable(
-                name: "UserQuizStamp");
+            
 
             migrationBuilder.DropIndex(
                 name: "IX_Questions_QuizId",

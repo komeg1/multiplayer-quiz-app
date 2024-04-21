@@ -17,7 +17,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             _context = context;
             _quizRepository = quizRepository;
         }
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUserAsync(int id)
         {
             var user = await _context.User.
                 Where(u => u.Id == id).
@@ -25,7 +25,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return user;
         }
-        public async Task<User> GetUser(string username)
+        public async Task<User> GetUserAsync(string username)
         {
             var user = await _context.User.
                 Where(u => u.Username == username).
@@ -45,7 +45,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             UserQuizStamp stamp = new UserQuizStamp
             {
                 Quiz = await _quizRepository.GetQuiz(quizId),
-                User = await GetUser(userId),
+                User = await GetUserAsync(userId),
                 Points = 0,
                 DateTime = DateTime.Now,
             };
@@ -94,6 +94,11 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             }
 
             return dtos;
+        }
+
+        public Task<UserDto> GetLoggedUser()
+        {
+            throw new NotImplementedException();
         }
     }
 

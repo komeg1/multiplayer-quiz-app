@@ -26,6 +26,11 @@ namespace MultiplayerQuizGame.Shared.Services
             throw new NotImplementedException();
         }
 
+        public Task<Room> CreateRoom(int quizId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<string> GenerateRoomCode()
         {
             throw new NotImplementedException();
@@ -38,6 +43,11 @@ namespace MultiplayerQuizGame.Shared.Services
         }
 
         public Task<bool> IsCodeUnique(string roomCode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> TryAddUser(string roomCode, Guest user)
         {
             throw new NotImplementedException();
         }

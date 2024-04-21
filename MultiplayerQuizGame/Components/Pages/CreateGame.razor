@@ -1,10 +1,9 @@
 @page "/create-game"
 @page "/create-game/{Mode}"
-@attribute [StreamRendering]
-
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
 @inject IQuizRepository QuizRepository
 @inject NavigationManager NavigationManager
-
+@inject IRoomService RoomService
 @if(Mode == null)
 {
     <div class="=flex gap-4">
@@ -16,18 +15,44 @@
         </a>
     </div>
 }
-@if (Mode == "multiplayer")
-{
-    <h1>Lobby</h1>
 
-}
 @if(_quizzes != null && Mode == "singleplayer")
 {
     <div class="flex gap-4">
-    @foreach (var quiz in _quizzes)
-    {
-        <QuizInfoCard QuizInfo="quiz"/>
-    }
+        @foreach (var quiz in _quizzes)
+        {
+            <QuizInfoCard QuizInfo="quiz" GameMode=@GameMode.MODE_SINGLEPLAYER/>
+        }
+    </div>
+}
+
+else if (_quizzes != null && Mode == "multiplayer")
+{
+    <div class="flex gap-4">
+        <InputRadioGroup TValue="int" Name="QuizRadioButton" @bind-Value=@_chosenQuiz> 
+        @foreach (var quiz in _quizzes)
+        {
+            <QuizInfoCard QuizInfo="quiz" GameMode=@GameMode.MODE_MULTIPLAYER/>
+        }
+        </InputRadioGroup>
+    </div>
+    <div class="flex gap-4">
+        <div>
+            <button class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out" @onclick=GenerateRoomCode>Generate Room Code</button>
+        </div>
+        <div>
+            @if (_isRoomCodeProcessStarted && _roomCode == null)
+            {
+                <span>Loading</span>
+            }
+            else if(_isRoomCodeProcessStarted && _roomCode != null)
+            {
+            <p class="text-4xl font-extrabold text-white dark:text-white">@_roomCode</p>
+            }
+        </div>
+        <div>
+            <button class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out" @onclick=CreateRoom>Create Room</button>
+        </div>
     </div>
 }
 
@@ -35,8 +60,32 @@
     [Parameter]
     public string Mode { get; set; }
     private List<QuizDto> _quizzes;
+
     protected override async Task OnInitializedAsync()
     {
         _quizzes = await QuizRepository.GetAvailableQuizzesDto();
     }
+
+    //MULTIPLAYER
+    private int _chosenQuiz;
+    private string _roomCode = null!;
+    private bool _isRoomCodeProcessStarted = false;
+
+    async Task GenerateRoomCode()
+    {
+        _isRoomCodeProcessStarted = true;
+        _roomCode = await RoomService.GenerateRoomCode();
+    }
+
+    async Task CreateRoom()
+    {
+        var room = await RoomService.CreateRoom(_chosenQuiz);
+
+        if(room != null)
+        {
+            NavigationManager.NavigateTo($"/lobby/{room.RoomCode}");
+        }
+    }
+
+    
 }
