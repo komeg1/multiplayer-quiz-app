@@ -23,6 +23,6 @@
     <ProjectReference Include="..\MultiplayerQuizGame.Shared\MultiplayerQuizGame.Shared.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties package_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

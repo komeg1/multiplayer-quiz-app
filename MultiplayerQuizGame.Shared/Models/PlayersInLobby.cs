@@ -9,7 +9,11 @@ namespace MultiplayerQuizGame.Shared.Models
 {
     public class PlayersInLobby
     {
+        //Need to split because SingalR doesn't invoke the methods while passing interfaces?? (Wanted to pass List<IPlayer>)
         public List<UserDto> Users { get; set; } = new();
         public List<Guest> Guests { get; set; } = new();
+
+        //<ConnectionId, isReady>, Dictionary that contains which player is ready to play
+        public Dictionary<string, bool> IsReadyToPlayDict { get; set; } = new();
     }
 }

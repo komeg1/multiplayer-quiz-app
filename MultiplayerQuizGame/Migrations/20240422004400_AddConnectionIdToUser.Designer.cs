@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MultiplayerQuizGame.Shared.Data;
 
@@ -11,9 +12,11 @@ using MultiplayerQuizGame.Shared.Data;
 namespace MultiplayerQuizGame.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240422004400_AddConnectionIdToUser")]
+    partial class AddConnectionIdToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,16 +129,14 @@ namespace MultiplayerQuizGame.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("HostConnectionId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsOpen")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("QuizId")
+                    b.Property<int>("QuizId")
                         .HasColumnType("int");
 
                     b.Property<string>("RoomCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -254,7 +255,9 @@ namespace MultiplayerQuizGame.Migrations
                 {
                     b.HasOne("MultiplayerQuizGame.Shared.Models.Quiz", "Quiz")
                         .WithMany("Rooms")
-                        .HasForeignKey("QuizId");
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Quiz");
                 });

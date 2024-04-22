@@ -15,6 +15,8 @@ namespace MultiplayerQuizGame.Shared.Models
         public string Username { get; set; }
         public string ConnectionId { get; set; }
         Room Room { get; set; }
+
+
         
     }
 }

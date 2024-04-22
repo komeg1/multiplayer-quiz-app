@@ -33,6 +33,9 @@ namespace MultiplayerQuizGame.Components.Hubs
         public async Task<RoomDto?> OpenRoom(string roomCode, UserDto user = null!, Guest guest = null!)
         {
             var room = await _roomRepository.GetRoomByCodeAsync(roomCode);
+            if (room == null)
+                return null;
+
             if (room.IsOpen == true)
                 return null;
 
@@ -51,12 +54,16 @@ namespace MultiplayerQuizGame.Components.Hubs
             var openRooms = await _roomRepository.GetOpenRoomsDtoAsync();
             await Clients.All.SendAsync("OpenRooms", openRooms.OrderBy(r => r.CreatedAt));
 
+            room.HostConnectionId = Context.ConnectionId;
             return room.Adapt<RoomDto>();
         }
 
         public async Task<RoomDto?> JoinRoom(string roomCode, UserDto user = null!, Guest guest = null!)
         {
             var room = await _roomRepository.GetRoomByCodeAsync(roomCode);
+            if (room == null)
+                return null;
+
             if (room.IsOpen == false)
                 return null;
 
@@ -73,6 +80,12 @@ namespace MultiplayerQuizGame.Components.Hubs
 
         }
 
-        
+        public async Task ChangePlayerReadyState(string roomCode, string username)
+        {
+            await Clients.Group(roomCode).SendAsync("OnPlayerChangedReadyState", username);
+        }
+
+
+
     }
 }

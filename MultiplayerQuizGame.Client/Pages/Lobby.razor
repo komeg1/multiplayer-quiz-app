@@ -3,28 +3,57 @@
 @inject IUserRepository UserRepository
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
-<span>Room @RoomCode</span>
+
 @if(_isNotConnected)
 {
-    <h2 class="text-red-200">Lobby is full!</h2>
+    <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Lobby is full or doesn't exist!</h2>
 }
 
 @if(_currentRoom != null)
 {
-    foreach(var user in _players.Users)
-    {
-        <li>
-            @user.Username
-        </li>
+     <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Room @RoomCode</h2>
+
+
+     <button @onclick=HandleReadyButton>Ready</button>
+     <table class="tg">
+        <thead>
+          <tr>
+            <th class="tg-uog8">User</th>
+            <th class="tg-0lax">IsReady</th>
+          </tr>
+        </thead>
+        <tbody>
+    @foreach(var user in _players.Users)
+    {   <tr>
+            <td>
+                @user.Username
+            </td>
+            <td>
+                 @_players.IsReadyToPlayDict[user.ConnectionId]
+            </td>
+        </tr>
     }
-    foreach (var user in _players.Guests)
+    @foreach (var user in _players.Guests)
     {
-        <li>
-            @user.Username
-        </li>
+        <tr>
+            <td>
+                @user.Username
+            </td>
+            <td>
+                        @_players.IsReadyToPlayDict[user.ConnectionId]
+            </td>
+        </tr>
+    }
+        </tbody>
+        </table>
+    @if(_currentRoom.HostConnectionId == _hubConnection.ConnectionId)
+    {
+        <button class="@($"bg-{(_isReadyButtonEnabled ? "blue-700" : "gray-800")} text-white font-bold py-2 px-4 rounded")" disabled="@(!_isReadyButtonEnabled)">Play</button>
     }
 
-   
+
+
+
 }
 
 @code {
@@ -36,8 +65,9 @@
     private UserDto? _loggedUser = null;
     private Guest? _guest = null;
     private string? _userName = string.Empty;
-    private bool _isNotConnected = false;
     private PlayersInLobby _players = new();
+    private bool _isNotConnected = false;
+    private bool _isReadyButtonEnabled => _players.IsReadyToPlayDict.Values.All(value => value);
 
 
     protected override async Task OnInitializedAsync()
@@ -53,10 +83,24 @@
             StateHasChanged();
         });
 
+        _hubConnection.On<string>("OnPlayerChangedReadyState", (connectionId) =>
+        {
+            _players.IsReadyToPlayDict[connectionId] = !_players.IsReadyToPlayDict[connectionId];
+            StateHasChanged();
+        });
+
         await _hubConnection.StartAsync();
 
         if (_loggedUser == null)
+        {
             _guest = new Guest { ConnectionId = _hubConnection.ConnectionId, Username = _hubConnection.ConnectionId };
+            _userName = _hubConnection.ConnectionId;
+        }
+        else
+        {
+            _loggedUser.ConnectionId = _hubConnection.ConnectionId;
+            _userName = _loggedUser.Username;
+        }
 
 
         //Create Room in SignalR if the client is host
@@ -71,11 +115,13 @@
             }
 
         }
-
-
-
     }
 
+    async Task HandleReadyButton()
+    {
+        if (_hubConnection != null)
+            await _hubConnection.InvokeAsync("ChangePlayerReadyState", RoomCode, _hubConnection.ConnectionId);
+    }
 
     
 }

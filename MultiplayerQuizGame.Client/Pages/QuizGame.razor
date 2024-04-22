@@ -21,14 +21,14 @@ else
     <div class="w-full p-8 bg-white rounded-lg shadow-lg">
      @if (isQuizFinished)
       {
-        <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-        <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-400 md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
+            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
+            <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
 
      }
     else if(isQuestionFinished)
     {
             <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @ResultCountdownText</span>
-            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
+            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
 
     }
     @if (_chosenQuiz != null && !isQuizFinished && !isQuestionFinished)

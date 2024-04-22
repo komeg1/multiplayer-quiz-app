@@ -10,6 +10,7 @@ namespace MultiplayerQuizGame.Shared.Models.Interfaces
     {
         int Id { get; set; }
         string Username { get; set; }
+        string ConnectionId { get; set; }
 
     }
 }

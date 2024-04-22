@@ -15,5 +15,6 @@ namespace MultiplayerQuizGame.Shared.Models.DTO
         //List of guests + List of users = list of players in the lobby 
         public List<Guest> Guests { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? HostConnectionId { get; set; }
     }
 }

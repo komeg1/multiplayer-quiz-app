@@ -82,6 +82,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             if (player is UserDto)
             {
                 var user = await _userRepository.GetUserAsync(player.Id);
+                user.ConnectionId = player.ConnectionId;
                 room!.Users.Add(user);
             }
 
@@ -100,10 +101,12 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 foreach(var player in room.Users.ToList())
                 {
                     playersInLobby.Users.Add(player.Adapt<UserDto>());
+                    playersInLobby.IsReadyToPlayDict.Add(player.ConnectionId, false);
                 }
                 foreach(var player in room.Guests.ToList())
                 {
                     playersInLobby.Guests.Add(player);
+                    playersInLobby.IsReadyToPlayDict.Add(player.ConnectionId, false);
                 }
 
                 return playersInLobby;
