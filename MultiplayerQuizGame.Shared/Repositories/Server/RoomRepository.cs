@@ -31,11 +31,15 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public async Task<Room> GetRoomByCodeAsync(string roomCode, bool includePlayers = false)
         {
             if (includePlayers == false)
-                return await _context.Room.FirstOrDefaultAsync(r => r.RoomCode == roomCode).ConfigureAwait(false);
+                return await _context.Room.
+                    Include(r=>r.Quiz).
+                    FirstOrDefaultAsync(r => r.RoomCode == roomCode).ConfigureAwait(false);
             else
                 return await _context.Room.
+                        Include(r=>r.Quiz).
                         Include(r => r.Users).
                         Include(r => r.Guests).
+                        AsSplitQuery().
                         FirstOrDefaultAsync(r => r.RoomCode == roomCode).ConfigureAwait(false);
         }
 
@@ -101,12 +105,22 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 foreach(var player in room.Users.ToList())
                 {
                     playersInLobby.Users.Add(player.Adapt<UserDto>());
-                    playersInLobby.IsReadyToPlayDict.Add(player.ConnectionId, false);
+                    playersInLobby.PlayersStates[player.ConnectionId!] =new PlayerState
+                    {
+                        IsReady = false,
+                        Points = 0,
+                        Score = 0
+                    };
                 }
                 foreach(var player in room.Guests.ToList())
                 {
                     playersInLobby.Guests.Add(player);
-                    playersInLobby.IsReadyToPlayDict.Add(player.ConnectionId, false);
+                    playersInLobby.PlayersStates[player.ConnectionId!] = new PlayerState
+                    {
+                        IsReady = false,
+                        Points = 0,
+                        Score = 0
+                    };
                 }
 
                 return playersInLobby;

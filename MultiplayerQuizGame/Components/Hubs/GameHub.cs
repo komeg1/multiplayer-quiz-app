@@ -14,11 +14,12 @@ namespace MultiplayerQuizGame.Components.Hubs
     {
         private readonly IRoomRepository _roomRepository;
         private readonly IRoomService _roomService;
-        private readonly IUserRepository _userRepository;
-        public GameHub(IRoomRepository roomRepository, IRoomService roomService) 
+        private readonly IQuizRepository _quizRepository;
+        public GameHub(IRoomRepository roomRepository, IRoomService roomService, IQuizRepository quizRepository) 
         {
             _roomRepository = roomRepository;
             _roomService = roomService;
+            _quizRepository = quizRepository;
 
         }
         public override async Task OnConnectedAsync()
@@ -55,6 +56,8 @@ namespace MultiplayerQuizGame.Components.Hubs
             await Clients.All.SendAsync("OpenRooms", openRooms.OrderBy(r => r.CreatedAt));
 
             room.HostConnectionId = Context.ConnectionId;
+            var roomDto = room.Adapt<RoomDto>();
+            roomDto.Quiz = await _quizRepository.GetQuizDto(roomDto.Quiz.Id);
             return room.Adapt<RoomDto>();
         }
 
@@ -83,6 +86,23 @@ namespace MultiplayerQuizGame.Components.Hubs
         public async Task ChangePlayerReadyState(string roomCode, string username)
         {
             await Clients.Group(roomCode).SendAsync("OnPlayerChangedReadyState", username);
+        }
+        
+        public async Task StartGame(string roomCode, bool val)
+        {
+            await Clients.Group(roomCode).SendAsync("OnGameStarted", val);
+        }
+
+        public async Task ChangePoints(string roomCode, string connectionId, int points)
+        {
+            try
+            {
+                await Clients.Group(roomCode).SendAsync("OnPointsChanged", connectionId, points);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
 

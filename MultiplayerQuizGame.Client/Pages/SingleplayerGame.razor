@@ -1,0 +1,8 @@
+﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+@page "/quiz/{Id}"
+<QuizGame Id="@Id" GameMode="GameMode.SINGLEPLAYER"/>
+@code {
+    [Parameter] 
+    public string Id { get; set; }
+
+}

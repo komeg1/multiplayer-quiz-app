@@ -9,7 +9,7 @@
         </a>
         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">@QuizInfo.Description</p>
         <p class="mb-3 text-sm text-gray-400 dark:text-gray-400">@QuizInfo.QuestionCount questions.</p>
-        @if (GameMode == GameMode.MODE_SINGLEPLAYER)
+        @if (GameMode == GameMode.SINGLEPLAYER)
         {
             <a href="/quiz/@QuizInfo.Id" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                 Start
@@ -18,7 +18,7 @@
             </svg>
         </a>
         }
-        else if (GameMode == GameMode.MODE_MULTIPLAYER)
+        else if (GameMode == GameMode.MULTIPLAYER)
         {
             <InputRadio Value="@QuizInfo.Id"/>
         }

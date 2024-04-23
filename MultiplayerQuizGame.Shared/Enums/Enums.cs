@@ -8,8 +8,8 @@ namespace MultiplayerQuizGame.Shared.Enums
 {
     public enum GameMode
     {
-        MODE_SINGLEPLAYER,
-        MODE_MULTIPLAYER,
-        MODE_INFO
+        SINGLEPLAYER,
+        MULTIPLAYER,
+        INFO
     }
 }

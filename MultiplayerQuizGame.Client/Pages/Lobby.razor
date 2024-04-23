@@ -9,50 +9,58 @@
     <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Lobby is full or doesn't exist!</h2>
 }
 
-@if(_currentRoom != null)
+@if(CurrentRoom != null)
 {
      <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Room @RoomCode</h2>
-
+    @if (_isGameStarted)
+    {
+        <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode"/>
+    }
 
      <button @onclick=HandleReadyButton>Ready</button>
-     <table class="tg">
-        <thead>
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class ="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th class="tg-uog8">User</th>
-            <th class="tg-0lax">IsReady</th>
+            <th scope="col" class="px-6 py-3">User</th>
+            <th scope="col" class="px-6 py-3">Ready</th>
+            <th scope="col" class="px-6 py-3">Points</th>
           </tr>
         </thead>
         <tbody>
     @foreach(var user in _players.Users)
-    {   <tr>
-            <td>
-                @user.Username
+            {
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <th scope="row" class="px-6 py-4 font-medium text-black whitespace-nowrap dark:text-white">
+                    @user.Username
+                </th>
+            <td class="px-6 py-4">
+                 @_players.PlayersStates[user.ConnectionId].IsReady
             </td>
-            <td>
-                 @_players.IsReadyToPlayDict[user.ConnectionId]
+            <td class="px-6 py-4">
+                @_players.PlayersStates[user.ConnectionId].Points
             </td>
         </tr>
     }
     @foreach (var user in _players.Guests)
     {
-        <tr>
-            <td>
-                @user.Username
-            </td>
-            <td>
-                        @_players.IsReadyToPlayDict[user.ConnectionId]
-            </td>
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <th scope="row" class="px-6 py-4 font-medium text-black whitespace-nowrap dark:text-white">
+                    @user.Username
+                </th>
+                <td class="px-6 py-4">
+                    @_players.PlayersStates[user.ConnectionId].IsReady
+                </td>
+                <td class="px-6 py-4">
+                        @_players.PlayersStates[user.ConnectionId].Points
+                </td>
         </tr>
     }
         </tbody>
         </table>
-    @if(_currentRoom.HostConnectionId == _hubConnection.ConnectionId)
+    @if(CurrentRoom.HostConnectionId == HubConnection.ConnectionId)
     {
-        <button class="@($"bg-{(_isReadyButtonEnabled ? "blue-700" : "gray-800")} text-white font-bold py-2 px-4 rounded")" disabled="@(!_isReadyButtonEnabled)">Play</button>
+        <button @onclick=HandlePlayButton class="@($"bg-{(_isReadyButtonEnabled ? "blue-700" : "gray-800")} text-white font-bold py-2 px-4 rounded")" disabled="@(!_isReadyButtonEnabled)">Play</button>
     }
-
-
-
 
 }
 
@@ -60,56 +68,92 @@
     [Parameter]
     public string RoomCode { get; set; }
 
-    private HubConnection? _hubConnection;
-    private RoomDto? _currentRoom;
+    public HubConnection? HubConnection { get; set; }
+    public RoomDto? CurrentRoom { get; set; }
     private UserDto? _loggedUser = null;
     private Guest? _guest = null;
     private string? _userName = string.Empty;
     private PlayersInLobby _players = new();
     private bool _isNotConnected = false;
-    private bool _isReadyButtonEnabled => _players.IsReadyToPlayDict.Values.All(value => value);
+    private bool _isReadyButtonEnabled => _players.PlayersStates.Values.All(playerState => playerState.IsReady);
+    private bool _isGameStarted = false;
 
 
     protected override async Task OnInitializedAsync()
     {
         _loggedUser = await UserRepository.GetLoggedUser();
 
-        _hubConnection = new HubConnectionBuilder().
-            WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
-            Build();
-        _hubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
+        try
         {
+            HubConnection = new HubConnectionBuilder().
+                WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
+                Build();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return;
+        }
+
+        HubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
+        {
+            
+            foreach (var player in _players.Users)
+            {
+                players.PlayersStates[player.ConnectionId].IsReady = _players.PlayersStates[player.ConnectionId].IsReady;
+                    
+            }
+            foreach (var player in _players.Guests)
+            {
+                players.PlayersStates[player.ConnectionId].IsReady = _players.PlayersStates[player.ConnectionId].IsReady;
+            }
             _players = players;
             StateHasChanged();
         });
 
-        _hubConnection.On<string>("OnPlayerChangedReadyState", (connectionId) =>
+        //TODO: Switch ChangeReadyState to ChangePlayerState
+        HubConnection.On<string>("OnPlayerChangedReadyState", (connectionId) =>
         {
-            _players.IsReadyToPlayDict[connectionId] = !_players.IsReadyToPlayDict[connectionId];
+            _players.PlayersStates[connectionId].IsReady = !_players.PlayersStates[connectionId].IsReady;
             StateHasChanged();
         });
 
-        await _hubConnection.StartAsync();
+        HubConnection.On<bool>("OnGameStarted", (val) =>
+        {
+            if (val == true)
+                _isGameStarted = true;
+            StateHasChanged();
+        });
+
+        HubConnection.On<string, int>("OnPointsChanged", (connectionId, points) =>
+        {
+            _players.PlayersStates[connectionId].Points = points;
+            StateHasChanged();
+        });
+
+        //TODO: Score listener
+
+        await HubConnection.StartAsync();
 
         if (_loggedUser == null)
         {
-            _guest = new Guest { ConnectionId = _hubConnection.ConnectionId, Username = _hubConnection.ConnectionId };
-            _userName = _hubConnection.ConnectionId;
+            _guest = new Guest { ConnectionId = HubConnection.ConnectionId!, Username = HubConnection.ConnectionId! };
+            _userName = HubConnection.ConnectionId;
         }
         else
         {
-            _loggedUser.ConnectionId = _hubConnection.ConnectionId;
+            _loggedUser.ConnectionId = HubConnection.ConnectionId!;
             _userName = _loggedUser.Username;
         }
 
 
         //Create Room in SignalR if the client is host
-        _currentRoom = await _hubConnection.InvokeAsync<RoomDto>("OpenRoom", RoomCode, _loggedUser, _guest);
+        CurrentRoom = await HubConnection.InvokeAsync<RoomDto>("OpenRoom", RoomCode, _loggedUser, _guest);
         //Else join the room
-        if(_currentRoom == null)
+        if(CurrentRoom == null)
         {
-            _currentRoom = await _hubConnection.InvokeAsync<RoomDto>("JoinRoom", RoomCode, _loggedUser, _guest);
-            if(_currentRoom == null)
+            CurrentRoom = await HubConnection.InvokeAsync<RoomDto>("JoinRoom", RoomCode, _loggedUser, _guest);
+            if(CurrentRoom == null)
             {
                 _isNotConnected = true;
             }
@@ -119,8 +163,14 @@
 
     async Task HandleReadyButton()
     {
-        if (_hubConnection != null)
-            await _hubConnection.InvokeAsync("ChangePlayerReadyState", RoomCode, _hubConnection.ConnectionId);
+        if (HubConnection != null)
+            await HubConnection.InvokeAsync("ChangePlayerReadyState", RoomCode, HubConnection.ConnectionId);
+    }
+
+    async Task HandlePlayButton()
+    {
+        if (HubConnection != null)
+             await HubConnection.InvokeAsync("StartGame", RoomCode, true);
     }
 
     

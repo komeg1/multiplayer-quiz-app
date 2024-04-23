@@ -16,23 +16,23 @@
     </div>
 }
 
-@if(_quizzes != null && Mode == "singleplayer")
+@if(Quizzes != null && Mode == "singleplayer")
 {
     <div class="flex gap-4">
-        @foreach (var quiz in _quizzes)
+        @foreach (var quiz in Quizzes)
         {
-            <QuizInfoCard QuizInfo="quiz" GameMode=@GameMode.MODE_SINGLEPLAYER/>
+            <QuizInfoCard QuizInfo=@quiz GameMode=@GameMode.SINGLEPLAYER/>
         }
     </div>
 }
 
-else if (_quizzes != null && Mode == "multiplayer")
+else if (Quizzes != null && Mode == "multiplayer")
 {
     <div class="flex gap-4">
         <InputRadioGroup TValue="int" Name="QuizRadioButton" @bind-Value=@_chosenQuiz> 
-        @foreach (var quiz in _quizzes)
+        @foreach (var quiz in Quizzes)
         {
-            <QuizInfoCard QuizInfo="quiz" GameMode=@GameMode.MODE_MULTIPLAYER/>
+            <QuizInfoCard QuizInfo="quiz" GameMode=@GameMode.MULTIPLAYER/>
         }
         </InputRadioGroup>
     </div>
@@ -58,15 +58,15 @@ else if (_quizzes != null && Mode == "multiplayer")
 
 @code{
     [Parameter]
-    public string Mode { get; set; }
-    private List<QuizDto> _quizzes;
+    public string? Mode { get; set; }
+    public List<QuizDto>? Quizzes { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        _quizzes = await QuizRepository.GetAvailableQuizzesDto();
+        Quizzes = await QuizRepository.GetAvailableQuizzesDto();
     }
 
-    //MULTIPLAYER
+    //------------ MULTIPLAYER MODE ------------------------
     private int _chosenQuiz;
     private string _roomCode = null!;
     private bool _isRoomCodeProcessStarted = false;

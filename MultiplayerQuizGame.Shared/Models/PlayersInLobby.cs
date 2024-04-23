@@ -13,7 +13,8 @@ namespace MultiplayerQuizGame.Shared.Models
         public List<UserDto> Users { get; set; } = new();
         public List<Guest> Guests { get; set; } = new();
 
-        //<ConnectionId, isReady>, Dictionary that contains which player is ready to play
-        public Dictionary<string, bool> IsReadyToPlayDict { get; set; } = new();
+        //Dictionary<ConnectionId, PlayerState>
+        public Dictionary<string,PlayerState> PlayersStates { get; set; } = new();
+        
     }
 }

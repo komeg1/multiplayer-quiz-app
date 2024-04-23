@@ -1,4 +1,4 @@
-﻿@page "/quiz/{Id}"
+﻿
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 @using System.Timers
 @inject IQuizService QuizService
@@ -12,31 +12,31 @@
 <HeadContent>
     <link rel="stylesheet" href="app_client.css" />
 </HeadContent>
-@if (!isLoaded)
+@if (!_isLoaded)
 {
     <span>Loading...</span>
 }
 else
 {
     <div class="w-full p-8 bg-white rounded-lg shadow-lg">
-     @if (isQuizFinished)
+     @if (_isQuizFinished)
       {
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-            <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Score: @score/@_chosenQuiz.QuestionCount</h5>
+            <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Score: @_score/@_chosenQuiz!.QuestionCount</h5>
 
      }
-    else if(isQuestionFinished)
+    else if(_isQuestionFinished)
     {
-            <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @ResultCountdownText</span>
-            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">You have:@points points 🔥</h2>
+            <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_resultCountdownText</span>
+            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">You have:@_points points 🔥</h2>
 
     }
-    @if (_chosenQuiz != null && !isQuizFinished && !isQuestionFinished)
+    @if (_chosenQuiz != null && !_isQuizFinished && !_isQuestionFinished)
     {
-        <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @CountdownText</span>
-        <span>Score: @score/@_chosenQuiz.QuestionCount</span>
-        <span>Points: @points</span>
-            <CurrentQuestion Question="_currentQuestion" OnAnswerCheck="CheckAnswer" />
+        <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_countdownText</span>
+        <span>Score: @_score/@_chosenQuiz.QuestionCount</span>
+        <span>Points: @_points</span>
+            <CurrentQuestion Question="CurrentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
     
@@ -46,41 +46,48 @@ else
 
 }
 @code {
-    const int MAX_QUESTION_SCORE = 100;
-    const int MAX_QUESTION_SECONDS = 15;
-    const int MAX_RESULT_SECONDS = 5;
-    const int ONE_SECOND = 1000;
+    private const int MAX_QUESTION_SCORE = 100;
+    private const int MAX_QUESTION_SECONDS = 15;
+    private const int MAX_RESULT_SECONDS = 5;
+    private const int ONE_SECOND = 1000;
+    
+    private bool _isQuestionFinished = false;
+    private bool _isLoaded = false;
+    private bool _isQuizFinished = false;
+    
+    private int _countdownSeconds = MAX_QUESTION_SECONDS;
+    private int _resultSeconds = MAX_RESULT_SECONDS;
+    private int _score = 0;
+    private int _questionNr = 0;
+    private float _points = 0;
 
-    bool isQuestionFinished = false;
-    bool isLoaded = false;
-    bool isQuizFinished = false;
-
-
-    int countdownSeconds = MAX_QUESTION_SECONDS;
-    int resultSeconds = MAX_RESULT_SECONDS;
-    string CountdownText => $"{countdownSeconds/60:00}:{countdownSeconds}";
-    string ResultCountdownText => $"{resultSeconds / 60:00}:{resultSeconds}";
-
-
-    int score = 0;
-    float points = 0;
-    int questionNr = 0;
+    private string _countdownText => $"{_countdownSeconds/60:00}:{_countdownSeconds}";
+    private string _resultCountdownText => $"{_resultSeconds / 60:00}:{_resultSeconds}";
 
 
     private Timer _questionTimer = null!;
-    private Timer _resultTimer = null;
+    private Timer _resultTimer = null!;
 
     private QuizDto? _chosenQuiz;
-    private QuestionDto? _currentQuestion;
+    public QuestionDto? CurrentQuestion;
     private UserQuizStampDto? _stampDto;
 
 
     [Parameter]
     public string Id { get; set; }
+    [Parameter]
+    public GameMode GameMode { get; set; }
+    [Parameter]
+    public HubConnection? HubConnection{ get; set; }
+    [Parameter]
+    public string? RoomCode{ get; set; }
+
+
     protected override async Task OnInitializedAsync()
     {
+
         _chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
-        _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
+        CurrentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, _questionNr++);
         try
         {
             _stampDto = await UserRepository.SaveQuizStamp(_chosenQuiz.Id);
@@ -97,62 +104,80 @@ else
         if(firstRender)
         {
             await Js.InvokeVoidAsync("window.initializeFlowbite");
-            isLoaded = true;
+            _isLoaded = true;
         }
 
     }
 
     public async void ChangeQuestion()
     {
-        if (questionNr < _chosenQuiz.QuestionCount)
+        if (_questionNr < _chosenQuiz.QuestionCount)
         {
-            _currentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, questionNr++);
+            CurrentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, _questionNr++);
 
         }
         else
         {
-            isQuestionFinished = false;
-            isQuizFinished = true;
+            _isQuestionFinished = false;
+            _isQuizFinished = true;
             Dispose(_questionTimer);
             Dispose(_resultTimer);
             if (_stampDto != null)
-                UpdateStampPoints((int)points);
+                UpdateStampPoints((int)_points);
             StateHasChanged();
         }
 
 
 
     }
+    public async void IncrementScoreAsync()
+    {
+        try
+        {
+            await HubConnection.InvokeAsync("ChangePoints", RoomCode, HubConnection.ConnectionId, (int)_points);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
     public void IncrementScore()
     {
-        Console.WriteLine(MAX_QUESTION_SCORE * (countdownSeconds / MAX_QUESTION_SECONDS));
-        points += (MAX_QUESTION_SCORE * (float)((float)countdownSeconds / (float)MAX_QUESTION_SECONDS));
-        score++;
+        Console.WriteLine(MAX_QUESTION_SCORE * (_countdownSeconds / MAX_QUESTION_SECONDS));
+        _points += (MAX_QUESTION_SCORE * (float)((float)_countdownSeconds / (float)MAX_QUESTION_SECONDS));
+        _score++;
+        if (GameMode == GameMode.MULTIPLAYER)
+        {
+            IncrementScoreAsync();
+        }
         StateHasChanged();
     }
     public async void ShowQuestionResult()
     {
-
+        _isQuestionFinished = true;
         if (_resultTimer is null)
         {
+            Console.WriteLine("Timer zainicjalizowany");
             InitTimer(ref _resultTimer, OnResultTimedEvent);
         }
         else
         {
             _resultTimer.Start();
         }
-        isQuestionFinished = true;
+
+
         ChangeQuestion();
 
     }
 
     public async void CheckAnswer(QuestionChoiceDto answer)
     {
-        if (await QuizService.CheckAnswer(_currentQuestion.Id, answer) == true)
+        ShowQuestionResult();
+        if (await QuizService.CheckAnswer(CurrentQuestion.Id, answer) == true)
         {
             IncrementScore();
         }
-        ShowQuestionResult();
+
     }
 
     public async Task UpdateStampPoints(int points)
@@ -167,33 +192,43 @@ else
         timer.Elapsed += elapsedEvent;
         timer.AutoReset = true;
         timer.Enabled = true;
+        Console.WriteLine("Timer włączony");
     }
     private async void OnResultTimedEvent(object? sender, ElapsedEventArgs e)
     {
-        resultSeconds--;
-        if (resultSeconds == 0)
+        try
         {
-            _resultTimer.Stop();
+            _resultSeconds--;
+            Console.WriteLine($"Jeszcze {_resultSeconds}");
+            if (_resultSeconds == 0)
+            {
+                _resultTimer.Stop();
+                _isQuestionFinished = false;
+                _resultSeconds = MAX_RESULT_SECONDS;
+                _countdownSeconds = MAX_QUESTION_SECONDS;
+                _questionTimer.Start();
 
-            resultSeconds = MAX_RESULT_SECONDS;
-            countdownSeconds = MAX_QUESTION_SECONDS;
-            _questionTimer.Start();            
-            isQuestionFinished = false;
 
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"{ ex.Message}");
         }
         InvokeAsync(() =>
         {
             StateHasChanged();
         });
     }
+
     private void OnQuestionTimedEvent(object? sender, ElapsedEventArgs e)
     {
-        countdownSeconds--;
+        _countdownSeconds--;
 
-        if (countdownSeconds == 0)
+        if (_countdownSeconds == 0)
         {
             _questionTimer.Stop();
-            countdownSeconds = MAX_QUESTION_SECONDS;
+            _countdownSeconds = MAX_QUESTION_SECONDS;
             ShowQuestionResult();
         }
         InvokeAsync(() =>
