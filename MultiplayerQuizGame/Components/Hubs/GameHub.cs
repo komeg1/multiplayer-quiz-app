@@ -30,6 +30,16 @@ namespace MultiplayerQuizGame.Components.Hubs
 
             await Clients.Caller.SendAsync("OpenRooms", openRooms.OrderBy(r=>r.CreatedAt));
         }
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            UserDisconnected(Context.ConnectionId);
+            return base.OnDisconnectedAsync(exception);
+        }
+        public async void UserDisconnected(string connectionId)
+        {
+            var room = await _roomRepository.RemovePlayerFromRoomAsync(connectionId);
+            await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", connectionId);
+        }
 
         public async Task<RoomDto?> OpenRoom(string roomCode, UserDto user = null!, Guest guest = null!)
         {
@@ -103,6 +113,12 @@ namespace MultiplayerQuizGame.Components.Hubs
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public async Task DisconnectPlayer(string roomCode, string connectionId)
+        {
+            Console.WriteLine($"User {connectionId} disconnected");
+            await Clients.Group(roomCode).SendAsync("OnUserDisconnected");
         }
 
 

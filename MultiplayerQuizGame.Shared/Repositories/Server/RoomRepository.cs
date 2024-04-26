@@ -43,6 +43,35 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                         FirstOrDefaultAsync(r => r.RoomCode == roomCode).ConfigureAwait(false);
         }
 
+        public async Task<Room> RemovePlayerFromRoomAsync(string connectionId)
+        {
+            
+            var room = await _context.Room.
+                Include(r=>r.Users).
+                Include(r=>r.Guests).
+                Where(r => r.Users!.
+                Any(u => u.ConnectionId == connectionId)).
+                FirstOrDefaultAsync();
+
+            if(room != null)
+            {
+                var playerToRemove = room.Users.FirstOrDefault(player => player.ConnectionId == connectionId);
+                room.Users.Remove(playerToRemove);
+                return room;
+            }
+
+            room = await _context.Room.
+                Include(r => r.Users).
+                Include(r => r.Guests).
+                Where(r => r.Guests!.
+                Any(u => u.ConnectionId == connectionId)).
+                FirstOrDefaultAsync();
+            var guestToRemove = room.Guests.FirstOrDefault(player => player.ConnectionId == connectionId);
+            room.Guests.Remove(guestToRemove);
+            return room;
+
+        }
+
         public async Task<List<RoomDto>> GetOpenRoomsDtoAsync()
         {
             var openRooms = await _context.Room.

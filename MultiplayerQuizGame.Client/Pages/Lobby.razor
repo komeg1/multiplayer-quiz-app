@@ -1,8 +1,8 @@
 ﻿@page "/lobby/{RoomCode}"
 @inject NavigationManager NavigationManager
 @inject IUserRepository UserRepository
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
 @if(_isNotConnected)
 {
@@ -11,56 +11,13 @@
 
 @if(CurrentRoom != null)
 {
-     <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Room @RoomCode</h2>
+     <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Room @RoomCode</h2>
     @if (_isGameStarted)
     {
         <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode"/>
     }
 
-     <button @onclick=HandleReadyButton>Ready</button>
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <thead class ="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-          <tr>
-            <th scope="col" class="px-6 py-3">User</th>
-            <th scope="col" class="px-6 py-3">Ready</th>
-            <th scope="col" class="px-6 py-3">Points</th>
-          </tr>
-        </thead>
-        <tbody>
-    @foreach(var user in _players.Users)
-            {
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <th scope="row" class="px-6 py-4 font-medium text-black whitespace-nowrap dark:text-white">
-                    @user.Username
-                </th>
-            <td class="px-6 py-4">
-                 @_players.PlayersStates[user.ConnectionId].IsReady
-            </td>
-            <td class="px-6 py-4">
-                @_players.PlayersStates[user.ConnectionId].Points
-            </td>
-        </tr>
-    }
-    @foreach (var user in _players.Guests)
-    {
-        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <th scope="row" class="px-6 py-4 font-medium text-black whitespace-nowrap dark:text-white">
-                    @user.Username
-                </th>
-                <td class="px-6 py-4">
-                    @_players.PlayersStates[user.ConnectionId].IsReady
-                </td>
-                <td class="px-6 py-4">
-                        @_players.PlayersStates[user.ConnectionId].Points
-                </td>
-        </tr>
-    }
-        </tbody>
-        </table>
-    @if(CurrentRoom.HostConnectionId == HubConnection.ConnectionId)
-    {
-        <button @onclick=HandlePlayButton class="@($"bg-{(_isReadyButtonEnabled ? "blue-700" : "gray-800")} text-white font-bold py-2 px-4 rounded")" disabled="@(!_isReadyButtonEnabled)">Play</button>
-    }
+        <Scoreboard Players="@Players" CurrentRoom="@CurrentRoom" IsReadyButtonEnabled="@IsReadyButtonEnabled" HubConnection="@HubConnection" ReadyButtonHandler="@HandleReadyButton"/>
 
 }
 
@@ -70,12 +27,12 @@
 
     public HubConnection? HubConnection { get; set; }
     public RoomDto? CurrentRoom { get; set; }
+    public PlayersInLobby Players = new();
+    public bool IsReadyButtonEnabled => Players.PlayersStates.Values.All(playerState => playerState.IsReady);
     private UserDto? _loggedUser = null;
     private Guest? _guest = null;
     private string? _userName = string.Empty;
-    private PlayersInLobby _players = new();
     private bool _isNotConnected = false;
-    private bool _isReadyButtonEnabled => _players.PlayersStates.Values.All(playerState => playerState.IsReady);
     private bool _isGameStarted = false;
 
 
@@ -89,7 +46,7 @@
                 WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
                 Build();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             return;
@@ -97,24 +54,24 @@
 
         HubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
         {
-            
-            foreach (var player in _players.Users)
+
+            foreach (var player in Players.Users)
             {
-                players.PlayersStates[player.ConnectionId].IsReady = _players.PlayersStates[player.ConnectionId].IsReady;
-                    
+                players.PlayersStates[player.ConnectionId].IsReady = Players.PlayersStates[player.ConnectionId].IsReady;
+
             }
-            foreach (var player in _players.Guests)
+            foreach (var player in Players.Guests)
             {
-                players.PlayersStates[player.ConnectionId].IsReady = _players.PlayersStates[player.ConnectionId].IsReady;
+                players.PlayersStates[player.ConnectionId].IsReady = Players.PlayersStates[player.ConnectionId].IsReady;
             }
-            _players = players;
+            Players = players;
             StateHasChanged();
         });
 
         //TODO: Switch ChangeReadyState to ChangePlayerState
         HubConnection.On<string>("OnPlayerChangedReadyState", (connectionId) =>
         {
-            _players.PlayersStates[connectionId].IsReady = !_players.PlayersStates[connectionId].IsReady;
+            Players.PlayersStates[connectionId].IsReady = !Players.PlayersStates[connectionId].IsReady;
             StateHasChanged();
         });
 
@@ -127,8 +84,21 @@
 
         HubConnection.On<string, int>("OnPointsChanged", (connectionId, points) =>
         {
-            _players.PlayersStates[connectionId].Points = points;
+            Players.PlayersStates[connectionId].Points = points;
             StateHasChanged();
+        });
+
+        HubConnection.On<string>("OnPlayerDisconnect", (connectionId) =>
+        {
+            var playerToRemove = Players.Users.FirstOrDefault(player => player.ConnectionId == connectionId);
+            if (playerToRemove != null)
+            {
+                Players.Users.Remove(playerToRemove);
+            }
+            else
+            {
+                Players.Guests.Remove(Players.Guests.FirstOrDefault(player => player.ConnectionId == connectionId)!);
+            }
         });
 
         //TODO: Score listener
@@ -172,6 +142,8 @@
         if (HubConnection != null)
              await HubConnection.InvokeAsync("StartGame", RoomCode, true);
     }
+
+
 
     
 }
