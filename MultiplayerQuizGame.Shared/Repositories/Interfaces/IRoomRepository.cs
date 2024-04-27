@@ -16,7 +16,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
         Task<Room> RemovePlayerFromRoomAsync(string connectionId);
         Task<bool> TryAddUserToRoomAsync(string roomCode, IPlayer player);
         Task<List<RoomDto>> GetOpenRoomsDtoAsync();
-        Task<Room> SetRoomToOpen(string roomCode);
+        Task<Room> SetRoomToOpen(string roomCode, string hostConnectionId);
         Task<PlayersInLobby> GetPlayersInLobbyAsync(string roomCode);
     }
 }

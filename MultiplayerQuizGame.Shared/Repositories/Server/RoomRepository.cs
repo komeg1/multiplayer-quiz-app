@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -51,12 +52,16 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 Include(r=>r.Guests).
                 Where(r => r.Users!.
                 Any(u => u.ConnectionId == connectionId)).
+                AsSplitQuery().
                 FirstOrDefaultAsync();
 
             if(room != null)
             {
                 var playerToRemove = room.Users.FirstOrDefault(player => player.ConnectionId == connectionId);
                 room.Users.Remove(playerToRemove);
+                if (playerToRemove.ConnectionId == room.HostConnectionId)
+                    room.IsOpen = false;
+                await _context.SaveChangesAsync();
                 return room;
             }
 
@@ -68,6 +73,9 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 FirstOrDefaultAsync();
             var guestToRemove = room.Guests.FirstOrDefault(player => player.ConnectionId == connectionId);
             room.Guests.Remove(guestToRemove);
+            if (guestToRemove.ConnectionId == room.HostConnectionId)
+                room.IsOpen = false;
+            await _context.SaveChangesAsync();
             return room;
 
         }
@@ -83,7 +91,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             return dtos;
         }
 
-        public async Task<Room> SetRoomToOpen(string roomCode)
+        public async Task<Room> SetRoomToOpen(string roomCode, string hostConnectionId)
         {
             var room = await _context.Room.
                 FirstOrDefaultAsync(r => r.RoomCode == roomCode);
@@ -91,6 +99,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             if (room != null)
             {
                 room.IsOpen = true;
+                room.HostConnectionId = hostConnectionId;
             }
             await _context.SaveChangesAsync();
 

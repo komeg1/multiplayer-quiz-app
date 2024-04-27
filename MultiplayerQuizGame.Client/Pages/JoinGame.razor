@@ -2,12 +2,12 @@
 @inject NavigationManager NavigationManager
 @inject IUserRepository UserRepository
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
-@if (_loggedUser == null)
-{
-    <InputText @bind-Value=@_userName></InputText>
-}
-<InputText @bind-Value=@_roomCodeInput></InputText>
 
+<div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+    <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl dark:text-white">ENTER ROOM CODE</h1>
+    <input @bind-value="@_roomCodeInput"/>
+    <button @onclick="()=>JoinRoom(_roomCodeInput)" class="@($"bg-{(_isRoomCodeProvided ? "green-400 hover:bg-green-500" : "gray-400 hover:bg-gray-500")}")" disabled=@(!_isRoomCodeProvided)>JOIN</button>
+</div>
 <h3>Rooms:</h3>
 @if (_openRooms != null)
 {
@@ -20,10 +20,11 @@
 }
 @code {
     private List<RoomDto>? _openRooms;
-    private string? _roomCodeInput;
+    private string? _roomCodeInput = null;
     private string? _userName;
     private UserDto? _loggedUser;
     private HubConnection? _hubConnection;
+    private bool _isRoomCodeProvided => _roomCodeInput != null && _roomCodeInput != "" ? true : false;
 
     protected override async Task OnInitializedAsync()
     {

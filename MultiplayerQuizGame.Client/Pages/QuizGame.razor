@@ -23,8 +23,9 @@ else
       {
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
             <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Score: @_score/@_chosenQuiz!.QuestionCount</h5>
+            
 
-     }
+    }
     else if(_isQuestionFinished)
     {
             <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_resultCountdownText</span>
@@ -50,11 +51,11 @@ else
     private const int MAX_QUESTION_SECONDS = 15;
     private const int MAX_RESULT_SECONDS = 5;
     private const int ONE_SECOND = 1000;
-    
+
     private bool _isQuestionFinished = false;
     private bool _isLoaded = false;
     private bool _isQuizFinished = false;
-    
+
     private int _countdownSeconds = MAX_QUESTION_SECONDS;
     private int _resultSeconds = MAX_RESULT_SECONDS;
     private int _score = 0;
@@ -68,11 +69,14 @@ else
     private Timer _questionTimer = null!;
     private Timer _resultTimer = null!;
 
-    private QuizDto? _chosenQuiz;
-    public QuestionDto? CurrentQuestion;
     private UserQuizStampDto? _stampDto;
+    private QuizDto? _chosenQuiz;
+
+    public QuestionDto? CurrentQuestion;
 
 
+    [Parameter]
+    public PlayersInLobby? Players { get; set; } = null;
     [Parameter]
     public string Id { get; set; }
     [Parameter]
@@ -85,6 +89,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if(Players != null)
+        {
+            foreach(var player in Players.Users)
+            {
+                //playersStandings.Add(player);
+            }
+            foreach (var player in Players.Guests)
+            {
+                //playersStandings.Add(player);
+            }
+        }
 
         _chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
         CurrentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, _questionNr++);

@@ -30,16 +30,17 @@ namespace MultiplayerQuizGame.Components.Hubs
 
             await Clients.Caller.SendAsync("OpenRooms", openRooms.OrderBy(r=>r.CreatedAt));
         }
-        public override Task OnDisconnectedAsync(Exception? exception)
+        public async override Task<Task> OnDisconnectedAsync(Exception? exception)
         {
-            UserDisconnected(Context.ConnectionId);
+
+            var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
+            await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", Context.ConnectionId);
+            if (room.IsOpen == false)
+                await Clients.Group(room.RoomCode).SendAsync("OnRoomClosed", true);
+
             return base.OnDisconnectedAsync(exception);
         }
-        public async void UserDisconnected(string connectionId)
-        {
-            var room = await _roomRepository.RemovePlayerFromRoomAsync(connectionId);
-            await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", connectionId);
-        }
+
 
         public async Task<RoomDto?> OpenRoom(string roomCode, UserDto user = null!, Guest guest = null!)
         {
@@ -50,10 +51,13 @@ namespace MultiplayerQuizGame.Components.Hubs
             if (room.IsOpen == true)
                 return null;
 
+            if (room.IsOpen == false && room.HostConnectionId != null)
+                return null;
+
             IPlayer player = user != null ? user : guest;
 
             await _roomRepository.TryAddUserToRoomAsync(roomCode, player);
-            room = await _roomRepository.SetRoomToOpen(room.RoomCode);
+            room = await _roomRepository.SetRoomToOpen(roomCode,player.ConnectionId);
             
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);

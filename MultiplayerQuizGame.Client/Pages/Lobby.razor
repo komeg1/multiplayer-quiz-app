@@ -1,39 +1,50 @@
 ﻿@page "/lobby/{RoomCode}"
 @inject NavigationManager NavigationManager
 @inject IUserRepository UserRepository
+@using System.Collections.Specialized;
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
-@if(_isNotConnected)
+@if(_isHostDisconnected)
 {
-    <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Lobby is full or doesn't exist!</h2>
+    <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Host has disconnected, closing the room...</h2>
 }
-
-@if(CurrentRoom != null)
+else
 {
-     <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Room @RoomCode</h2>
-    @if (_isGameStarted)
+    @if(_isNotConnected)
     {
-        <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode"/>
+        <h2 class="mb-4 text-center text-4xl font-extrabold text-red-900">Lobby is full or doesn't exist!</h2>
     }
 
-        <Scoreboard Players="@Players" CurrentRoom="@CurrentRoom" IsReadyButtonEnabled="@IsReadyButtonEnabled" HubConnection="@HubConnection" ReadyButtonHandler="@HandleReadyButton"/>
+    @if(CurrentRoom != null)
+    {
+         <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Room @RoomCode</h2>
+        @if (IsGameStarted)
+        {
+            <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode" Players="@Players"/>
+        }
 
+            <Scoreboard Players="@Players" CurrentRoom="@CurrentRoom" IsReadyButtonEnabled="@IsReadyButtonEnabled" IsGameStarted="@IsGameStarted" HubConnection="@HubConnection" ReadyButtonHandler="@HandleReadyButton"/>
+
+    }
 }
 
 @code {
-    [Parameter]
-    public string RoomCode { get; set; }
+    private UserDto? _loggedUser = null;
+    private Guest? _guest = null;
+    private string? _userName = string.Empty;
+    private bool _isNotConnected = false;
+    private bool _isHostDisconnected = false;
 
     public HubConnection? HubConnection { get; set; }
     public RoomDto? CurrentRoom { get; set; }
     public PlayersInLobby Players = new();
     public bool IsReadyButtonEnabled => Players.PlayersStates.Values.All(playerState => playerState.IsReady);
-    private UserDto? _loggedUser = null;
-    private Guest? _guest = null;
-    private string? _userName = string.Empty;
-    private bool _isNotConnected = false;
-    private bool _isGameStarted = false;
+    public bool IsGameStarted = false;
+
+
+    [Parameter]
+    public string RoomCode { get; set; }
 
 
     protected override async Task OnInitializedAsync()
@@ -58,7 +69,6 @@
             foreach (var player in Players.Users)
             {
                 players.PlayersStates[player.ConnectionId].IsReady = Players.PlayersStates[player.ConnectionId].IsReady;
-
             }
             foreach (var player in Players.Guests)
             {
@@ -78,13 +88,14 @@
         HubConnection.On<bool>("OnGameStarted", (val) =>
         {
             if (val == true)
-                _isGameStarted = true;
+                IsGameStarted = true;
             StateHasChanged();
         });
 
         HubConnection.On<string, int>("OnPointsChanged", (connectionId, points) =>
         {
             Players.PlayersStates[connectionId].Points = points;
+
             StateHasChanged();
         });
 
@@ -99,7 +110,18 @@
             {
                 Players.Guests.Remove(Players.Guests.FirstOrDefault(player => player.ConnectionId == connectionId)!);
             }
+            StateHasChanged();
         });
+
+        HubConnection.On<bool>("OnRoomClosed",async (value) =>
+    {
+        if(value == true)
+        {
+            _isHostDisconnected = true;
+            StateHasChanged();
+            await HubConnection.DisposeAsync();   
+        }
+    });
 
         //TODO: Score listener
 
@@ -140,7 +162,7 @@
     async Task HandlePlayButton()
     {
         if (HubConnection != null)
-             await HubConnection.InvokeAsync("StartGame", RoomCode, true);
+            await HubConnection.InvokeAsync("StartGame", RoomCode, true);
     }
 
 
