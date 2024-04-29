@@ -1,16 +1,40 @@
 ﻿@inject IUserRepository UserRepository
-<h3>GameHistory</h3>
-
 @if(_isLoaded)
 {
-    <ul>
-    @foreach(var entry in _gameHistory)
-    {
-        <li>
-                <span class="text-black">QuizId: @entry.QuizId, Points: @entry.Points, Date: @entry.DateTime</span>
-        </li>
-    }
-    </ul>
+    <div class="p-4">
+    <div class="bg-white w-full md:max-w-4xl rounded-lg shadow p-1">
+        <table class="w-full md:max-w-4xl">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th>Quiz Id</th>
+                    <th>Points</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in _gameHistory)
+                {
+                        <tr class="even:bg-gray-200 odd:bg-white transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-102 hover:bg-indigo-400 hover:text-white duration-300">
+                    <th>
+                        @entry.QuizId
+                    </th>
+                    <td>
+                        @entry.Points
+                    </td>
+                    <td>
+                        @entry.DateTime
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    </div>
+}
+else
+{
+    <span>Loading...</span>
+
 }
 
 @code {
@@ -31,6 +55,3 @@
 
 
 
-
-
-}

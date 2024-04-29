@@ -23,9 +23,20 @@ else
         {
             <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode" Players="@Players"/>
         }
+        <div class="flex gap-4 justify-center pt-4">
 
             <Scoreboard Players="@Players" CurrentRoom="@CurrentRoom" IsReadyButtonEnabled="@IsReadyButtonEnabled" IsGameStarted="@IsGameStarted" HubConnection="@HubConnection" ReadyButtonHandler="@HandleReadyButton"/>
 
+            @if(!IsGameStarted)
+            {
+                <div>
+                    <div class="bg-white rounded-t-lg relative top-2 z-10">
+                        <h2 class="text-center lg:text-4xl md:text-3xl sm:text-2xl font-bold text-black">Chosen quiz</h2>
+                    </div>
+                <QuizInfoCard GameMode="@GameMode.INFO" QuizInfo="@CurrentRoom.Quiz" />
+                </div>
+            }
+        </div>
     }
 }
 
@@ -33,8 +44,10 @@ else
     private UserDto? _loggedUser = null;
     private Guest? _guest = null;
     private string? _userName = string.Empty;
+
     private bool _isNotConnected = false;
     private bool _isHostDisconnected = false;
+    private bool _isExistingUser = false;
 
     public HubConnection? HubConnection { get; set; }
     public RoomDto? CurrentRoom { get; set; }
@@ -51,11 +64,13 @@ else
     {
         _loggedUser = await UserRepository.GetLoggedUser();
 
+
         try
         {
             HubConnection = new HubConnectionBuilder().
                 WithUrl(NavigationManager.ToAbsoluteUri("/gamehub")).
                 Build();
+
         }
         catch (Exception ex)
         {
@@ -105,23 +120,32 @@ else
             if (playerToRemove != null)
             {
                 Players.Users.Remove(playerToRemove);
+                Players.PlayersStates.Remove(playerToRemove.ConnectionId);
             }
             else
             {
-                Players.Guests.Remove(Players.Guests.FirstOrDefault(player => player.ConnectionId == connectionId)!);
+                var guestToRemove = Players.Guests.FirstOrDefault(player => player.ConnectionId == connectionId)!;
+                Players.Guests.Remove(guestToRemove);
+                Players.PlayersStates.Remove(guestToRemove.ConnectionId);
             }
             StateHasChanged();
         });
 
         HubConnection.On<bool>("OnRoomClosed",async (value) =>
-    {
-        if(value == true)
         {
-            _isHostDisconnected = true;
+            if(value == true)
+            {
+                _isHostDisconnected = true;
+                StateHasChanged();
+                await HubConnection.DisposeAsync();   
+            }
+        });
+
+        HubConnection.On<RoomDto>("OnHostChange", (room) =>
+        {
+            CurrentRoom.HostConnectionId = room.HostConnectionId;
             StateHasChanged();
-            await HubConnection.DisposeAsync();   
-        }
-    });
+        });
 
         //TODO: Score listener
 
@@ -136,7 +160,9 @@ else
         {
             _loggedUser.ConnectionId = HubConnection.ConnectionId!;
             _userName = _loggedUser.Username;
+            
         }
+
 
 
         //Create Room in SignalR if the client is host
@@ -163,6 +189,17 @@ else
     {
         if (HubConnection != null)
             await HubConnection.InvokeAsync("StartGame", RoomCode, true);
+    }
+
+    async Task CheckIfUserAlreadyInLobby(UserDto user)
+    {
+        foreach (var player in Players.Users)
+        {
+            if(user.Id == player.Id)
+            {
+                await HubConnection.InvokeAsync("AssignNewConnectionIdToExistingUser", RoomCode, user.Id);
+            }
+        }
     }
 
 

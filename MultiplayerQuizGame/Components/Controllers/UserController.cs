@@ -50,7 +50,7 @@ namespace MultiplayerQuizGame.Components.Controllers
                     var userId = int.Parse(HttpContext.User.FindFirst(c => c.Type is "id")?.Value);
                     var username = HttpContext.User.FindFirst(c => c.Type is ClaimTypes.Name)?.Value;
                     Console.WriteLine($"{userId} oraz {username}");
-                    stampDto = await _userRepository.SaveQuizStamp(stampDto.QuizId, userId);
+                    stampDto = await _userRepository.SaveQuizStamp(stampDto. QuizId, userId);
                     return Ok(stampDto);
                 }
                 return NotFound();

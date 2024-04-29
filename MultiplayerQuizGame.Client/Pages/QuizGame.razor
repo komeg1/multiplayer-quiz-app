@@ -8,7 +8,6 @@
 
 
 
-<h3>Quiz @Id</h3>
 <HeadContent>
     <link rel="stylesheet" href="app_client.css" />
 </HeadContent>
@@ -18,7 +17,7 @@
 }
 else
 {
-    <div class="w-full p-8 bg-white rounded-lg shadow-lg">
+    <div class="w-full h-[350px] p-8 bg-white rounded-lg shadow-lg">
      @if (_isQuizFinished)
       {
             <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
@@ -28,15 +27,24 @@ else
     }
     else if(_isQuestionFinished)
     {
+           
             <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_resultCountdownText</span>
-            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">You have:@_points points 🔥</h2>
+            @if (_pickedCorrectAnswer)
+            {
+                <h2 class="mb-4 text-center text-3xl lg:text-6xl md:text-5xl font-extrabold text-green-700 leading-none">Correct! You got @_pointsThisRnd points</h2>
+            }
+            else
+            {
+                <h2 class="mb-4 text-center text-3xl lg:text-6xl md:text-5xl font-extrabold text-red-700 leading-none">Wrong 😬! You got 0 points</h2>
+            }
+            <h2 class="mb-4 text-center text-2xl font-bold leading-none tracking-tight text-black md:text-4xl lg:text-3xl dark:text-white">You have:@_pointsOvr points 🔥</h2>
 
     }
     @if (_chosenQuiz != null && !_isQuizFinished && !_isQuestionFinished)
     {
         <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_countdownText</span>
         <span>Score: @_score/@_chosenQuiz.QuestionCount</span>
-        <span>Points: @_points</span>
+        <span>Points: @_pointsOvr</span>
             <CurrentQuestion Question="CurrentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
@@ -55,12 +63,15 @@ else
     private bool _isQuestionFinished = false;
     private bool _isLoaded = false;
     private bool _isQuizFinished = false;
+    private bool _pickedCorrectAnswer = false;
+ 
 
     private int _countdownSeconds = MAX_QUESTION_SECONDS;
     private int _resultSeconds = MAX_RESULT_SECONDS;
     private int _score = 0;
     private int _questionNr = 0;
-    private float _points = 0;
+    private float _pointsThisRnd = 0;
+    private float _pointsOvr = 0;
 
     private string _countdownText => $"{_countdownSeconds/60:00}:{_countdownSeconds}";
     private string _resultCountdownText => $"{_resultSeconds / 60:00}:{_resultSeconds}";
@@ -138,7 +149,7 @@ else
             Dispose(_questionTimer);
             Dispose(_resultTimer);
             if (_stampDto != null)
-                UpdateStampPoints((int)_points);
+                UpdateStampPoints((int)_pointsOvr);
             StateHasChanged();
         }
 
@@ -149,7 +160,7 @@ else
     {
         try
         {
-            await HubConnection.InvokeAsync("ChangePoints", RoomCode, HubConnection.ConnectionId, (int)_points);
+            await HubConnection.InvokeAsync("ChangePoints", RoomCode, HubConnection.ConnectionId, (int)_pointsOvr);
         }
         catch (Exception ex)
         {
@@ -159,13 +170,14 @@ else
     public void IncrementScore()
     {
         Console.WriteLine(MAX_QUESTION_SCORE * (_countdownSeconds / MAX_QUESTION_SECONDS));
-        _points += (MAX_QUESTION_SCORE * (float)((float)_countdownSeconds / (float)MAX_QUESTION_SECONDS));
+        _pointsThisRnd = (MAX_QUESTION_SCORE * ((float)_countdownSeconds / (float)MAX_QUESTION_SECONDS));
+        _pointsOvr += _pointsThisRnd;
         _score++;
         if (GameMode == GameMode.MULTIPLAYER)
         {
             IncrementScoreAsync();
         }
-        StateHasChanged();
+        
     }
     public async void ShowQuestionResult()
     {
@@ -187,11 +199,13 @@ else
 
     public async void CheckAnswer(QuestionChoiceDto answer)
     {
-        ShowQuestionResult();
+        
         if (await QuizService.CheckAnswer(CurrentQuestion.Id, answer) == true)
         {
+            _pickedCorrectAnswer = true;
             IncrementScore();
         }
+        ShowQuestionResult();
 
     }
 
@@ -219,6 +233,8 @@ else
             {
                 _resultTimer.Stop();
                 _isQuestionFinished = false;
+                _pickedCorrectAnswer = false;
+                _pointsThisRnd = 0;
                 _resultSeconds = MAX_RESULT_SECONDS;
                 _countdownSeconds = MAX_QUESTION_SECONDS;
                 _questionTimer.Start();

@@ -2,21 +2,51 @@
 @inject NavigationManager NavigationManager
 @inject IUserRepository UserRepository
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
-
+<style>
+    .overflow-y-auto::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+@if(!isLoaded)
+{
+    <div class="p-4 flex justify-center">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+             role="status">
+            <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
 <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
     <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl dark:text-white">ENTER ROOM CODE</h1>
     <input @bind-value="@_roomCodeInput"/>
     <button @onclick="()=>JoinRoom(_roomCodeInput)" class="@($"bg-{(_isRoomCodeProvided ? "green-400 hover:bg-green-500" : "gray-400 hover:bg-gray-500")}")" disabled=@(!_isRoomCodeProvided)>JOIN</button>
 </div>
-<h3>Rooms:</h3>
-@if (_openRooms != null)
+@if(_openRooms == null)
 {
-    foreach (var room in _openRooms)
-    {
-        <li>@room.RoomCode <button @onclick="() => JoinRoom(room.RoomCode)">
-            Join Room
-        </button></li>
-    }
+    <div class="p-4 flex justify-center">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+             role="status">
+            <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+
+    <div class="p-4 flex justify-center ">
+        <div class="bg-none w-full md:max-w-2xl items-center rounded-lg  p-1 overflow-y-auto flex flex-col h-[400px]">
+            @foreach (var room in _openRooms)
+            {
+                <div>
+                    <button class="border-black rounded-full w-[300px] bg-white transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-102 hover:bg-indigo-400 text-6xl text-black font-bold py-2 px-12 shadow-lg mb-2" @onclick="() => JoinRoom(room.RoomCode)">@room.RoomCode</button>
+                </div>
+               
+            }
+        </div>
+    </div>
+}
 }
 @code {
     private List<RoomDto>? _openRooms;
@@ -25,7 +55,14 @@
     private UserDto? _loggedUser;
     private HubConnection? _hubConnection;
     private bool _isRoomCodeProvided => _roomCodeInput != null && _roomCodeInput != "" ? true : false;
-
+    private bool isLoaded = false;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+            isLoaded = true;
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         _loggedUser = await UserRepository.GetLoggedUser();

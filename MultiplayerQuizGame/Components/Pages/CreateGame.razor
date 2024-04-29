@@ -38,9 +38,6 @@ else if (Quizzes != null && Mode == "multiplayer")
     </div>
     <div class="flex gap-4">
         <div>
-            <button class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out" @onclick=GenerateRoomCode>Generate Room Code</button>
-        </div>
-        <div>
             @if (_isRoomCodeProcessStarted && _roomCode == null)
             {
                 <span>Loading</span>

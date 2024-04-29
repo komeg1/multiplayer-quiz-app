@@ -15,11 +15,13 @@ namespace MultiplayerQuizGame.Components.Hubs
         private readonly IRoomRepository _roomRepository;
         private readonly IRoomService _roomService;
         private readonly IQuizRepository _quizRepository;
-        public GameHub(IRoomRepository roomRepository, IRoomService roomService, IQuizRepository quizRepository) 
+        private readonly IUserRepository _userRepository;
+        public GameHub(IRoomRepository roomRepository, IRoomService roomService, IQuizRepository quizRepository, IUserRepository userRepository) 
         {
             _roomRepository = roomRepository;
             _roomService = roomService;
             _quizRepository = quizRepository;
+            _userRepository = userRepository;
 
         }
         public override async Task OnConnectedAsync()
@@ -34,9 +36,14 @@ namespace MultiplayerQuizGame.Components.Hubs
         {
 
             var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
-            await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", Context.ConnectionId);
-            if (room.IsOpen == false)
-                await Clients.Group(room.RoomCode).SendAsync("OnRoomClosed", true);
+            if (room != null)
+            {
+                await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", Context.ConnectionId);
+                if (room.IsOpen == false)
+                    await Clients.Group(room.RoomCode).SendAsync("OnRoomClosed", true);
+                else
+                    await Clients.Group(room.RoomCode).SendAsync("OnHostChange", room.Adapt<RoomDto>());
+            }
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -72,7 +79,7 @@ namespace MultiplayerQuizGame.Components.Hubs
             room.HostConnectionId = Context.ConnectionId;
             var roomDto = room.Adapt<RoomDto>();
             roomDto.Quiz = await _quizRepository.GetQuizDto(roomDto.Quiz.Id);
-            return room.Adapt<RoomDto>();
+            return roomDto;
         }
 
         public async Task<RoomDto?> JoinRoom(string roomCode, UserDto user = null!, Guest guest = null!)
@@ -84,16 +91,32 @@ namespace MultiplayerQuizGame.Components.Hubs
             if (room.IsOpen == false)
                 return null;
 
-            IPlayer player = user != null ? user : guest;
-            if (await _roomRepository.TryAddUserToRoomAsync(roomCode, player) == false)
-                return null;
-        
+            if(user != null)
+            {
+                if (await TryAssignNewConnectionIdToExistingUser(roomCode, user.Id) == false)
+                {
+                    return null;
+                }
 
+            }
+
+            else
+            {
+                IPlayer player = user != null ? user : guest;
+
+                if (await _roomRepository.TryAddUserToRoomAsync(roomCode, player) == false)
+                    return null;
+
+
+                
+                
+            }
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
             var playersInLobby = await _roomRepository.GetPlayersInLobbyAsync(roomCode);
-
             await Clients.Group(roomCode).SendAsync("PlayerJoined", playersInLobby);
-            return room.Adapt<RoomDto>();
+            var roomDto = room.Adapt<RoomDto>();
+            roomDto.Quiz = await _quizRepository.GetQuizDto(roomDto.Quiz.Id);
+            return roomDto;
 
         }
 
@@ -119,10 +142,15 @@ namespace MultiplayerQuizGame.Components.Hubs
             }
         }
 
-        public async Task DisconnectPlayer(string roomCode, string connectionId)
+
+        public async Task<bool> TryAssignNewConnectionIdToExistingUser(string roomCode, int userId)
         {
-            Console.WriteLine($"User {connectionId} disconnected");
-            await Clients.Group(roomCode).SendAsync("OnUserDisconnected");
+            if(await _roomRepository.TryChangeUserConnectionId(roomCode, Context.ConnectionId, userId) == true)
+            {
+                return true;
+            }
+            return false;
+
         }
 
 

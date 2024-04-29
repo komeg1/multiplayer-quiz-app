@@ -60,7 +60,20 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 var playerToRemove = room.Users.FirstOrDefault(player => player.ConnectionId == connectionId);
                 room.Users.Remove(playerToRemove);
                 if (playerToRemove.ConnectionId == room.HostConnectionId)
-                    room.IsOpen = false;
+                {
+                    if(room.Users != null && room.Users.Count > 0)
+                    {
+                        room.HostConnectionId = room.Users[0].ConnectionId;
+                    }
+                    else if(room.Guests != null && room.Guests.Count > 0)
+                    {
+                        room.HostConnectionId = room.Guests[0].ConnectionId;
+                    }
+                    else
+                    {
+                        room.IsOpen = false;
+                    }
+                }
                 await _context.SaveChangesAsync();
                 return room;
             }
@@ -71,12 +84,29 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 Where(r => r.Guests!.
                 Any(u => u.ConnectionId == connectionId)).
                 FirstOrDefaultAsync();
-            var guestToRemove = room.Guests.FirstOrDefault(player => player.ConnectionId == connectionId);
-            room.Guests.Remove(guestToRemove);
-            if (guestToRemove.ConnectionId == room.HostConnectionId)
-                room.IsOpen = false;
-            await _context.SaveChangesAsync();
-            return room;
+            if (room != null)
+            {
+                var guestToRemove = room.Guests.FirstOrDefault(player => player.ConnectionId == connectionId);
+                room.Guests.Remove(guestToRemove);
+                if (guestToRemove.ConnectionId == room.HostConnectionId)
+                {
+                    if (room.Users != null && room.Users.Count > 0)
+                    {
+                        room.HostConnectionId = room.Users[0].ConnectionId;
+                    }
+                    else if (room.Guests != null && room.Guests.Count > 0)
+                    {
+                        room.HostConnectionId = room.Guests[0].ConnectionId;
+                    }
+                    else
+                    {
+                        room.IsOpen = false;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                return room;
+            }
+            return null;
 
         }
 
@@ -131,6 +161,29 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             await _context.SaveChangesAsync();
 
             return true;
+
+        }
+
+        public async Task<bool> TryChangeUserConnectionId(string roomCode, string connectionId, int userId)
+        {
+            var userToChange = await _userRepository.GetUserAsync(userId);
+            if(userToChange != null)
+            {
+                var room = await GetRoomByCodeAsync(roomCode);
+
+                if(room == null) return false;
+
+                if(room.HostConnectionId == userToChange.ConnectionId)
+                {
+                    room.HostConnectionId = connectionId;
+                }
+
+                userToChange.ConnectionId = connectionId;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+            
 
         }
 
