@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiplayerQuizGame.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,10 @@ namespace MultiplayerQuizGame.Shared.Models.DTO
     {
         public int Id { get; set; }
         public int UserId {  get; set; }
-        public int QuizId { get; set; }
+        public QuizDto Quiz { get; set; } 
         public DateTime DateTime { get; set; }
         public int Points { get; set; } 
+        public int Score { get; set; }
+        public GameMode GameMode { get; set; }
     }
 }

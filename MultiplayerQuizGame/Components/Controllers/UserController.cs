@@ -50,7 +50,8 @@ namespace MultiplayerQuizGame.Components.Controllers
                     var userId = int.Parse(HttpContext.User.FindFirst(c => c.Type is "id")?.Value);
                     var username = HttpContext.User.FindFirst(c => c.Type is ClaimTypes.Name)?.Value;
                     Console.WriteLine($"{userId} oraz {username}");
-                    stampDto = await _userRepository.SaveQuizStamp(stampDto. QuizId, userId);
+                    stampDto.UserId = userId;
+                    stampDto = await _userRepository.SaveQuizStamp(stampDto);
                     return Ok(stampDto);
                 }
                 return NotFound();
@@ -65,12 +66,11 @@ namespace MultiplayerQuizGame.Components.Controllers
         [HttpPost]
         [Authorize("LoggedUserOnly")]
         [Route("/api/stamp/{stampId}")]
-        public async Task<IActionResult> UpdateStampPoints(int stampId,[FromBody] int points)
+        public async Task<IActionResult> UpdateStampPoints(int stampId,[FromBody] StampData data)
         {
-            
             try
             { 
-                await _userRepository.UpdateStampPoints(stampId, points);
+                await _userRepository.UpdateStampPoints(stampId, data.Points, data.Score);
                 return Ok();
             }
             catch (Exception e)
@@ -87,15 +87,30 @@ namespace MultiplayerQuizGame.Components.Controllers
             if (HttpContext.User.Identity is not null && HttpContext.User.Identity.IsAuthenticated)
             {
                 var userId = int.Parse(HttpContext.User.FindFirst(c => c.Type is "id")?.Value);
-                var user = await _userRepository.GetUserAsync(userId);
+                var user = await _userRepository.GetUserByIdAsync(userId);
                 return Ok(user.Adapt<UserDto>());
             }
             return Ok(null);
         }
 
+        [HttpGet]
+        [Route("user/{id}")]
+        public async Task<ActionResult<UserDto>> GetUserDtoByIdAsync(string id)
+        {
+            var result = await _userRepository.GetUserDtoByIdAsync(Int32.Parse(id));
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
 
 
 
+        public class StampData
+        {
+            public int Points { get; set; }
+            public int Score { get; set; }
+        }
     }
 
 }

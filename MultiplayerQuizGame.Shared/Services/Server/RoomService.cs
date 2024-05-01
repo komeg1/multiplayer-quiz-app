@@ -41,7 +41,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
                 Room room = new Room
                 {
                     RoomCode = roomCode,
-                    Quiz = await _quizRepository.GetQuiz(quizId),
+                    Quiz = await _quizRepository.GetQuizAsync(quizId),
                     CreatedAt = DateTime.Now,
                     IsOpen = false,
                 };

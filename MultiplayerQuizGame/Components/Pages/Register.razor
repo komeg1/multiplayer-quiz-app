@@ -4,11 +4,32 @@
 
 @page "/register"
 
-<EditForm method="post" OnSubmit="HandleRegister" Model="Credentials" FormName="RegisterUser">
-    <InputText @bind-Value="Credentials.Username" placeholder="Username" class="form-control"/>
-    <InputText @bind-Value="Credentials.Password" placeholder="Password" type="password" class="form-control"/>
-    <button type="submit" class=" text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Sign in</button>
-</EditForm>
+
+<div class="p-4 flex justify-center">
+    <div class="justify-center w-1/2 h-[350px] p-8 bg-white rounded-lg shadow-lg">
+        <div>
+            <h2 class="text-lg text-gray-900 text-center font-bold">Register</h2>
+        </div>
+        <div class="pt-2">
+            <EditForm method="post" OnSubmit="HandleRegister" Model="Credentials" FormName="RegisterUser">
+                <div class="h-12 border-b border-gray-200 m-4">
+                <div class="relative z-0">
+                    <input @bind-value="@Credentials.Username" type="text" id="username" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder="" />
+                    <label for="username" class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Username</label>
+                </div>
+                </div>
+        
+                <div class="h-12 border-b border-gray-200 m-4">
+                <div class="relative z-0">
+                    <input @bind-value="@Credentials.Password" type="password" id="password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder="" />
+                    <label for="password" class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Password</label>
+                </div>
+                </div>
+                <button type="submit" class=" text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Register</button>
+            </EditForm>
+            </div>
+    </div>
+</div>
 <div>
     @if (_user != null)
     {

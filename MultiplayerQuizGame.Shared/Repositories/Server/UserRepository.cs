@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
 using MultiplayerQuizGame.Shared.Data;
+using MultiplayerQuizGame.Shared.Enums;
 using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Models.DTO;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
@@ -17,7 +18,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             _context = context;
             _quizRepository = quizRepository;
         }
-        public async Task<User> GetUserAsync(int id)
+        public async Task<User> GetUserByIdAsync(int id)
         {
             var user = await _context.User.
                 Where(u => u.Id == id).
@@ -25,7 +26,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return user;
         }
-        public async Task<User> GetUserAsync(string username)
+        public async Task<User> GetUserByUsernameAsync(string username)
         {
             var user = await _context.User.
                 Where(u => u.Username == username).
@@ -40,33 +41,26 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             return;
         }
 
-        public async Task<UserQuizStampDto> SaveQuizStamp(int quizId, int userId)
+        public async Task<UserQuizStampDto> SaveQuizStamp(UserQuizStampDto stampDto)
         {
             UserQuizStamp stamp = new UserQuizStamp
             {
-                Quiz = await _quizRepository.GetQuiz(quizId),
-                User = await GetUserAsync(userId),
+                Quiz = await _quizRepository.GetQuizAsync(stampDto.Quiz.Id),
+                User = await GetUserByIdAsync(stampDto.UserId),
                 Points = 0,
+                Score = 0,
                 DateTime = DateTime.Now,
+                GameMode = stampDto.GameMode,
             };
-
             var savedStamp = await _context.UserQuizStamp.AddAsync(stamp);
             await _context.SaveChangesAsync();
 
-            UserQuizStampDto stampDto = new UserQuizStampDto
-            {
-                Id = savedStamp.Entity.Id,
-                QuizId = quizId,
-                UserId = userId,
-                DateTime = savedStamp.Entity.DateTime,
-                Points = 0,
-            };
-
-
-            return stampDto;
+            UserQuizStampDto dto= savedStamp.Entity.Adapt<UserQuizStampDto>();
+            dto.Quiz.QuestionCount = stamp.Quiz.Questions.Count;
+            return savedStamp.Entity.Adapt<UserQuizStampDto>();
         }
 
-        public async Task UpdateStampPoints(int stampId, int points)
+        public async Task UpdateStampPoints(int stampId, int points, int score)
         {
             var stamp = _context.UserQuizStamp.
                 FirstOrDefault(s=>s.Id == stampId);
@@ -74,6 +68,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             if(stamp != null)
             {
                 stamp.Points = points;
+                stamp.Score = score;
             }
             await _context.SaveChangesAsync();
         }
@@ -89,7 +84,6 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             foreach (var entry in result )
             {
                 temp = entry.Adapt<UserQuizStampDto>();
-                temp.QuizId = entry.Quiz.Id;
                 dtos.Add(temp);
             }
 
@@ -99,6 +93,16 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public Task<UserDto> GetLoggedUser()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<UserDto> GetUserDtoByIdAsync(int id)
+        {
+            var user = await GetUserByIdAsync(id);
+            if(user!= null)
+            {
+                return user.Adapt<UserDto>();
+            }
+            return null!;
         }
     }
 

@@ -6,9 +6,12 @@
         <table class="w-full md:max-w-4xl">
             <thead class="bg-gray-200">
                 <tr>
-                    <th>Quiz Id</th>
+                    <th>Quiz Name</th>
                     <th>Points</th>
+                    <th>Score</th>
+                    <th>Game Mode</th>
                     <th>Date</th>
+
                 </tr>
             </thead>
             <tbody>
@@ -16,10 +19,23 @@
                 {
                         <tr class="even:bg-gray-200 odd:bg-white transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-102 hover:bg-indigo-400 hover:text-white duration-300">
                     <th>
-                        @entry.QuizId
+                        @entry.Quiz.Title
                     </th>
                     <td>
                         @entry.Points
+                    </td>
+                    <td>
+                        @entry.Score / @entry.Quiz.QuestionCount
+                    </td>
+                    <td>
+                        @if(entry.GameMode == GameMode.SINGLEPLAYER)
+                          {
+                              <p>Singleplayer</p>
+                          }
+                        else
+                        {
+                            <p>Multiplayer</p>
+                        }
                     </td>
                     <td>
                         @entry.DateTime

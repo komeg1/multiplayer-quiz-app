@@ -19,26 +19,26 @@ namespace MultiplayerQuizGame.Components.Controllers
         [HttpGet("all")]
         public async Task<ActionResult> GetAvailableQuizzes()
         {
-            var quiz = await _quizRepository.GetAvailableQuizzesDto();
+            var quiz = await _quizRepository.GetAvailableQuizzesDtoAsync();
             return Ok(quiz);
         }
         [HttpGet("{id}")]
         public async Task<ActionResult> GetQuiz(string id)
         {
-            var quiz = await _quizRepository.GetQuizDto(Int32.Parse(id));
+            var quiz = await _quizRepository.GetQuizDtoAsync(Int32.Parse(id));
             return Ok(quiz);
         }
         [HttpGet("{quizId}/question/{questionNr}")]
         public async Task<ActionResult> GetQuestion(int quizId, int questionNr)
         {
-            var question = await _quizRepository.GetQuestionDto(quizId, questionNr);
+            var question = await _quizRepository.GetQuestionDtoAsync(quizId, questionNr);
             return Ok(question);
         }
 
         [HttpGet("/question/{questionId}")]
         public async Task<ActionResult> GetQuestion(int questionId)
         {
-            var question = await _quizRepository.GetQuestionDto(questionId);
+            var question = await _quizRepository.GetQuestionDtoAsync(questionId);
             return Ok(question);
         }
 

@@ -15,35 +15,35 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             _httpClient = httpClient;
         }
 
-        public async Task<List<QuizDto>> GetAvailableQuizzesDto()
+        public async Task<List<QuizDto>> GetAvailableQuizzesDtoAsync()
         {
             var result = await _httpClient.GetFromJsonAsync<List<QuizDto>>("/api/quiz/all");
             return result;
         }
-        public async Task<QuizDto> GetQuizDto(int id)
+        public async Task<QuizDto> GetQuizDtoAsync(int id)
         {
             var result = await _httpClient.GetFromJsonAsync<QuizDto>($"/api/quiz/{id}");
             return result;
         }
 
-        public async Task<QuestionDto> GetQuestionDto(int quizId, int questionNr)
+        public async Task<QuestionDto> GetQuestionDtoAsync(int quizId, int questionNr)
         {
             var result = await _httpClient.GetFromJsonAsync<QuestionDto>($"/api/quiz/{quizId}/question/{questionNr}");
             return result;
         }
 
-        public Task<Question> GetQuestion(int questionId)
+        public Task<Question> GetQuestionAsync(int questionId)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<QuestionDto> GetQuestionDto(int questionId)
+        public async Task<QuestionDto> GetQuestionDtoAsync(int questionId)
         {
             var result = await _httpClient.GetFromJsonAsync<QuestionDto>($"/api/quiz/question/{questionId}");
             return result;
         }
 
-        public Task<Quiz> GetQuiz(int id)
+        public Task<Quiz> GetQuizAsync(int id)
         {
             throw new NotImplementedException();
         }

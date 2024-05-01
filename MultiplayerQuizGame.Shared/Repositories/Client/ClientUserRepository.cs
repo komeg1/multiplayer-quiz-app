@@ -13,9 +13,11 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
     public class ClientUserRepository : IUserRepository
     {
         private readonly HttpClient _httpClient;
-        public ClientUserRepository(HttpClient httpClient)
+        private readonly IQuizRepository _quizRepostiory;
+        public ClientUserRepository(HttpClient httpClient, IQuizRepository quizRepository)
         {
             _httpClient = httpClient;
+            _quizRepostiory = quizRepository;
         }
         public Task AddUser(User user)
         {
@@ -35,14 +37,20 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             }
             
         }
-        public Task<User> GetUserAsync(int id)
+        public Task<User> GetUserByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> GetUserAsync(string username)
+        public Task<User> GetUserByUsernameAsync(string username)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<UserDto> GetUserDtoByIdAsync(int id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<UserDto>($"/api/user/{id}");
+            return result!;
         }
 
         public Task<List<UserQuizStampDto>> GetUserGameHistory(int id)
@@ -50,21 +58,17 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             throw new NotImplementedException();
         }
 
-        public async Task<UserQuizStampDto> SaveQuizStamp(int quizId, int userId = 0)
+        public async Task<UserQuizStampDto> SaveQuizStamp(UserQuizStampDto stampDto)
         {
-            UserQuizStampDto stampDto = new UserQuizStampDto
-            {
-                UserId = userId,
-                QuizId = quizId,
-            };
             var result = await _httpClient.PostAsJsonAsync<UserQuizStampDto>($"/api/user/stamp", stampDto);
 
             return await result.Content.ReadFromJsonAsync<UserQuizStampDto>();
         }
 
-        public async Task UpdateStampPoints(int stampId, int points)
+        public async Task UpdateStampPoints(int stampId, int points, int score)
         {
-            var result = await _httpClient.PostAsJsonAsync<int>($"/api/stamp/{stampId}", points);
+            var parameters = new { Points = points, Score = score };
+            var result = await _httpClient.PostAsJsonAsync<object>($"/api/stamp/{stampId}", parameters);
             var res = result.Content.ReadAsStringAsync();
             return;
         }

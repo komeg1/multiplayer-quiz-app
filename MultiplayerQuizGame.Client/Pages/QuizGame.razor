@@ -64,7 +64,7 @@ else
     private bool _isLoaded = false;
     private bool _isQuizFinished = false;
     private bool _pickedCorrectAnswer = false;
- 
+
 
     private int _countdownSeconds = MAX_QUESTION_SECONDS;
     private int _resultSeconds = MAX_RESULT_SECONDS;
@@ -112,11 +112,11 @@ else
             }
         }
 
-        _chosenQuiz = await QuizRepository.GetQuizDto(Int32.Parse(Id));
-        CurrentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, _questionNr++);
+        _chosenQuiz = await QuizRepository.GetQuizDtoAsync(Int32.Parse(Id));
+        CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(_chosenQuiz.Id, _questionNr++);
         try
         {
-            _stampDto = await UserRepository.SaveQuizStamp(_chosenQuiz.Id);
+            _stampDto = await UserRepository.SaveQuizStamp(new UserQuizStampDto { Quiz = _chosenQuiz, GameMode = GameMode});
         }
         catch (Exception ex)
         {
@@ -139,7 +139,7 @@ else
     {
         if (_questionNr < _chosenQuiz.QuestionCount)
         {
-            CurrentQuestion = await QuizRepository.GetQuestionDto(_chosenQuiz.Id, _questionNr++);
+            CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(_chosenQuiz.Id, _questionNr++);
 
         }
         else
@@ -149,7 +149,7 @@ else
             Dispose(_questionTimer);
             Dispose(_resultTimer);
             if (_stampDto != null)
-                UpdateStampPoints((int)_pointsOvr);
+                UpdateStampPoints((int)_pointsOvr, _score);
             StateHasChanged();
         }
 
@@ -209,9 +209,9 @@ else
 
     }
 
-    public async Task UpdateStampPoints(int points)
+    public async Task UpdateStampPoints(int points, int score)
     {
-        UserRepository.UpdateStampPoints(_stampDto.Id, points);
+        UserRepository.UpdateStampPoints(_stampDto.Id, points, score);
 
     }
     //TIMER METHODS

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiplayerQuizGame.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,9 @@ namespace MultiplayerQuizGame.Shared.Models
         public User User { get; set; }
         public Quiz Quiz { get; set; }
         public int Points { get; set; }
+        //Score is an amount of the correct answers
+        public int Score { get; set; }
+        public GameMode GameMode { get; set; }
         public DateTime DateTime { get; set; }
     }
 }

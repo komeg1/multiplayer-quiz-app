@@ -32,7 +32,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return question;
         }
-        public async Task<Question> GetQuestion(int questionId)
+        public async Task<Question> GetQuestionAsync(int questionId)
         {
             var question = await _dataContext.Question.
                 Include(q => q.QuestionChoices).
@@ -41,7 +41,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return question;
         }
-        public async Task<Quiz> GetQuiz(int id)
+        public async Task<Quiz> GetQuizAsync(int id)
         {
 
             var quiz = await _dataContext.Quiz.
@@ -56,7 +56,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
 
         // DTO methods
-        public async Task<List<QuizDto>> GetAvailableQuizzesDto()
+        public async Task<List<QuizDto>> GetAvailableQuizzesDtoAsync()
         {
             var quizzesWithQuestionCount = await _dataContext.Quiz.
                 Include(q => q.Questions).
@@ -73,7 +73,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return quizzesWithQuestionCount;
         }
-        public async Task<QuizDto> GetQuizDto(int id)
+        public async Task<QuizDto> GetQuizDtoAsync(int id)
         {
 
             var quiz = await _dataContext.Quiz.
@@ -94,14 +94,14 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             return quizDto;
 
         }
-        public async Task<QuestionDto> GetQuestionDto(int questionId)
+        public async Task<QuestionDto> GetQuestionDtoAsync(int questionId)
         {
-            var question = await GetQuestion(questionId);
+            var question = await GetQuestionAsync(questionId);
             QuestionDto questionDto = question.Adapt<QuestionDto>();
 
             return questionDto;
         }
-        public async Task<QuestionDto> GetQuestionDto(int quizId, int questionNr)
+        public async Task<QuestionDto> GetQuestionDtoAsync(int quizId, int questionNr)
         {
             var question = await GetQuestion(quizId, questionNr);
             QuestionDto questionDto = question.Adapt<QuestionDto>();

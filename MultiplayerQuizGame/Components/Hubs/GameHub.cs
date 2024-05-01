@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Models.DTO;
@@ -34,7 +35,6 @@ namespace MultiplayerQuizGame.Components.Hubs
         }
         public async override Task<Task> OnDisconnectedAsync(Exception? exception)
         {
-
             var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
             if (room != null)
             {
@@ -78,7 +78,7 @@ namespace MultiplayerQuizGame.Components.Hubs
 
             room.HostConnectionId = Context.ConnectionId;
             var roomDto = room.Adapt<RoomDto>();
-            roomDto.Quiz = await _quizRepository.GetQuizDto(roomDto.Quiz.Id);
+            roomDto.Quiz = await _quizRepository.GetQuizDtoAsync(roomDto.Quiz.Id);
             return roomDto;
         }
 
@@ -93,29 +93,23 @@ namespace MultiplayerQuizGame.Components.Hubs
 
             if(user != null)
             {
-                if (await TryAssignNewConnectionIdToExistingUser(roomCode, user.Id) == false)
-                {
+                if (await _roomRepository.IsPlayerInLobby(roomCode, user.Id) == true)
                     return null;
-                }
-
             }
 
-            else
-            {
-                IPlayer player = user != null ? user : guest;
+            IPlayer player = user != null ? user : guest;
 
-                if (await _roomRepository.TryAddUserToRoomAsync(roomCode, player) == false)
-                    return null;
+            if (await _roomRepository.TryAddUserToRoomAsync(roomCode, player) == false)
+                return null;
 
 
-                
-                
-            }
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+
             var playersInLobby = await _roomRepository.GetPlayersInLobbyAsync(roomCode);
             await Clients.Group(roomCode).SendAsync("PlayerJoined", playersInLobby);
+            
             var roomDto = room.Adapt<RoomDto>();
-            roomDto.Quiz = await _quizRepository.GetQuizDto(roomDto.Quiz.Id);
+            roomDto.Quiz = await _quizRepository.GetQuizDtoAsync(roomDto.Quiz.Id);
             return roomDto;
 
         }
@@ -142,16 +136,6 @@ namespace MultiplayerQuizGame.Components.Hubs
             }
         }
 
-
-        public async Task<bool> TryAssignNewConnectionIdToExistingUser(string roomCode, int userId)
-        {
-            if(await _roomRepository.TryChangeUserConnectionId(roomCode, Context.ConnectionId, userId) == true)
-            {
-                return true;
-            }
-            return false;
-
-        }
 
 
 

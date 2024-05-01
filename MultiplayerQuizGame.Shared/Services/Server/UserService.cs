@@ -26,7 +26,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 
         public async Task<User> Register(Credentials registerCredentials)
         {
-            User user = await _userRepository.GetUserAsync(registerCredentials.Username);
+            User user = await _userRepository.GetUserByUsernameAsync(registerCredentials.Username);
 
             if (user != default)
                 return new User { Username = string.Empty };
@@ -45,7 +45,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 
         public async Task<User> Login(Credentials loginCredentials)
         {
-            var user = await _userRepository.GetUserAsync(loginCredentials.Username);
+            var user = await _userRepository.GetUserByUsernameAsync(loginCredentials.Username);
 
             if (user == null)
                 return null!;

@@ -19,7 +19,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 
         public async Task<bool> CheckAnswer(int questionId, QuestionChoiceDto pickedAnswer)
         {
-            var question = await _quizRepository.GetQuestion(questionId);
+            var question = await _quizRepository.GetQuestionAsync(questionId);
 
             if (question == null)
                 throw new KeyNotFoundException();

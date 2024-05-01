@@ -10,13 +10,13 @@ namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
 {
     public interface IQuizRepository
     {
-        Task<Question> GetQuestion(int questionId);
-        Task<Quiz> GetQuiz(int id);
+        Task<Question> GetQuestionAsync(int questionId);
+        Task<Quiz> GetQuizAsync(int id);
 
         //DTO
-        Task<List<QuizDto>> GetAvailableQuizzesDto();
-        Task<QuestionDto> GetQuestionDto(int quizId, int questionNr);
-        Task<QuestionDto> GetQuestionDto(int questionId);
-        Task<QuizDto> GetQuizDto(int id);
+        Task<List<QuizDto>> GetAvailableQuizzesDtoAsync();
+        Task<QuestionDto> GetQuestionDtoAsync(int quizId, int questionNr);
+        Task<QuestionDto> GetQuestionDtoAsync(int questionId);
+        Task<QuizDto> GetQuizDtoAsync(int id);
     }
 }

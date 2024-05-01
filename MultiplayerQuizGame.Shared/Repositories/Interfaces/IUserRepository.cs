@@ -1,4 +1,5 @@
-﻿using MultiplayerQuizGame.Shared.Models;
+﻿using MultiplayerQuizGame.Shared.Enums;
+using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Models.DTO;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,12 @@ namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
     public interface IUserRepository
     {
         Task<UserDto> GetLoggedUser();
-        Task<User> GetUserAsync(int id);
-        Task<User> GetUserAsync(string username); 
+        Task<User> GetUserByIdAsync(int id);
+        Task<User> GetUserByUsernameAsync(string username);
+        Task<UserDto> GetUserDtoByIdAsync(int id);
         Task AddUser(User user);
-        Task<UserQuizStampDto> SaveQuizStamp(int quizId, int userId = 0);
-        Task UpdateStampPoints(int stampId, int points);
+        Task<UserQuizStampDto> SaveQuizStamp(UserQuizStampDto stampDto);
+        Task UpdateStampPoints(int stampId, int points, int score);
         Task<List<UserQuizStampDto>> GetUserGameHistory(int id);
 
     }

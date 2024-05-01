@@ -60,7 +60,7 @@ else if (Quizzes != null && Mode == "multiplayer")
 
     protected override async Task OnInitializedAsync()
     {
-        Quizzes = await QuizRepository.GetAvailableQuizzesDto();
+        Quizzes = await QuizRepository.GetAvailableQuizzesDtoAsync();
     }
 
     //------------ MULTIPLAYER MODE ------------------------
