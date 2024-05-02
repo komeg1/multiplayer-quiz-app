@@ -15,6 +15,8 @@ namespace MultiplayerQuizGame.Shared.Models
         public int Points { get; set; }
         //Score is an amount of the correct answers
         public int Score { get; set; }
+        //Experience gained in this specific quiz
+        public int Experience {  get; set; }
         public GameMode GameMode { get; set; }
         public DateTime DateTime { get; set; }
     }

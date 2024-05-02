@@ -66,11 +66,11 @@ namespace MultiplayerQuizGame.Components.Controllers
         [HttpPost]
         [Authorize("LoggedUserOnly")]
         [Route("/api/stamp/{stampId}")]
-        public async Task<IActionResult> UpdateStampPoints(int stampId,[FromBody] StampData data)
+        public async Task<IActionResult> UpdateStamp(int stampId,[FromBody] StampData data)
         {
             try
             { 
-                await _userRepository.UpdateStampPoints(stampId, data.Points, data.Score);
+                await _userRepository.UpdateStamp(stampId, data.Points, data.Score, data.Experience);
                 return Ok();
             }
             catch (Exception e)
@@ -110,6 +110,7 @@ namespace MultiplayerQuizGame.Components.Controllers
         {
             public int Points { get; set; }
             public int Score { get; set; }
+            public int Experience { get; set; }
         }
     }
 

@@ -34,7 +34,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return user;
         }
-        public async Task AddUser(User user)
+        public async Task AddUser(User user)    
         {
             await _context.User.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -60,18 +60,31 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             return savedStamp.Entity.Adapt<UserQuizStampDto>();
         }
 
-        public async Task UpdateStampPoints(int stampId, int points, int score)
+        public async Task UpdateStamp(int stampId, int points, int score, int experience)
         {
             var stamp = _context.UserQuizStamp.
+                Include(s=>s.User).
                 FirstOrDefault(s=>s.Id == stampId);
+
+            //Eventually move to separate method call
+            try
+            {
+                await UpdateExperience(stamp!.User.Id, experience);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
             if(stamp != null)
             {
                 stamp.Points = points;
                 stamp.Score = score;
+                stamp.Experience = experience;
             }
             await _context.SaveChangesAsync();
         }
+
         public async Task<List<UserQuizStampDto>> GetUserGameHistory(int userId)
         {
             var result = await _context.UserQuizStamp.
@@ -103,6 +116,19 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 return user.Adapt<UserDto>();
             }
             return null!;
+        }
+
+        public async Task UpdateExperience(int userId, int experience)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.Experience += experience;
+
+            if(user.Experience/100 > user.Level)
+                user.Level = user.Experience/100;
+
+            await _context.SaveChangesAsync();
+
+
         }
     }
 

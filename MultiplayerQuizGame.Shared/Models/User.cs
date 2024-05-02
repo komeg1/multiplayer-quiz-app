@@ -17,6 +17,8 @@ namespace MultiplayerQuizGame.Shared.Models
         public string PasswordHash { get; set; }
         public string PasswordSalt { get; set; }
         public List<Room>? Rooms { get; set; }
+        public int Level { get; set; }
+        public int Experience { get; set; }
 
         //Used in lobbies for actions like IsReady..
         public string? ConnectionId { get; set; }

@@ -65,12 +65,17 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             return await result.Content.ReadFromJsonAsync<UserQuizStampDto>();
         }
 
-        public async Task UpdateStampPoints(int stampId, int points, int score)
+        public async Task UpdateStamp(int stampId, int points, int score, int experience)
         {
-            var parameters = new { Points = points, Score = score };
+            var parameters = new { Points = points, Score = score, Experience = experience};
             var result = await _httpClient.PostAsJsonAsync<object>($"/api/stamp/{stampId}", parameters);
             var res = result.Content.ReadAsStringAsync();
             return;
+        }
+
+        public async Task UpdateExperience(int userId, int experience)
+        {
+            throw new NotImplementedException();
         }
 
     }

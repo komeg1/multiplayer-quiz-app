@@ -15,6 +15,7 @@ namespace MultiplayerQuizGame.Shared.Models.DTO
         public DateTime DateTime { get; set; }
         public int Points { get; set; } 
         public int Score { get; set; }
+        public int Experience { get; set; }
         public GameMode GameMode { get; set; }
     }
 }

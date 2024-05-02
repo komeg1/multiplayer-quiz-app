@@ -15,5 +15,7 @@ namespace MultiplayerQuizGame.Shared.Models.DTO
         //Used in lobbies for actions like IsReady..
         [NotMapped]
         public string ConnectionId { get; set; }
+        public int Level { get; set; }
+        public int Experience { get; set; }
     }
 }

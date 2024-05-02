@@ -9,6 +9,7 @@
                     <th>Quiz Name</th>
                     <th>Points</th>
                     <th>Score</th>
+                    <th>Experience</th>
                     <th>Game Mode</th>
                     <th>Date</th>
 
@@ -26,6 +27,9 @@
                     </td>
                     <td>
                         @entry.Score / @entry.Quiz.QuestionCount
+                    </td>
+                    <td>
+                        @entry.Experience
                     </td>
                     <td>
                         @if(entry.GameMode == GameMode.SINGLEPLAYER)

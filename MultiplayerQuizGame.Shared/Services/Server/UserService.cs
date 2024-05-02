@@ -34,7 +34,9 @@ namespace MultiplayerQuizGame.Shared.Services.Server
             user = new User
             {
                 Username = registerCredentials.Username,
-                PasswordSalt = PasswordHasher.GenerateSalt()
+                PasswordSalt = PasswordHasher.GenerateSalt(),
+                Level = 0,
+                Experience = 0,
             };
             user.PasswordHash = PasswordHasher.ComputeHash(registerCredentials.Password, user.PasswordSalt, _pepper, _iteration);
             await _userRepository.AddUser(user);
@@ -56,6 +58,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 
             return user;
         }
+
 
 
 
