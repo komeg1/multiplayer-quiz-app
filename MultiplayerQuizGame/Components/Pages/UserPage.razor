@@ -18,11 +18,13 @@
                 <span>Upload avatar</span>
                 <InputFile OnChange="OnFileUploadChange"/>
             </div>
-            <div>
-                Level: @_userDto.Level
+            <div class="p-1">
+                <span class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Level @_userDto.Level</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
-                <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: @(_levelProgressInPercent)%"> @(_levelProgressInPercent)%</div>
+            <div class="p-1">
+                <div class="w-1/2 bg-gray-200 rounded-full dark:bg-gray-700">
+                    <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: @(_levelProgressInPercent)%"> @(_levelProgressInPercent)%</div>
+                </div>
             </div>
 
         </div>
