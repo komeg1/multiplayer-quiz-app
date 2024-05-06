@@ -59,7 +59,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             if (room != null)
             {
                 IPlayer playerToRemove;
-                if (room.Users != null)
+                if (room.Users.Count != 0)
                 {
                     playerToRemove = room.Users.FirstOrDefault(u => u.ConnectionId == connectionId);
                     if (playerToRemove != null)

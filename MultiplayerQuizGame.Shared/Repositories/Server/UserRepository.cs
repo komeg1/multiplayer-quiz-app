@@ -93,7 +93,9 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         {
             var result = await _context.UserQuizStamp.
                 Include(s => s.Quiz).
+                ThenInclude(q=>q.Questions).
                 Where(s => s.User.Id == userId).
+                AsSplitQuery().
                 ToListAsync();
 
             List<UserQuizStampDto> dtos = new List<UserQuizStampDto>();
@@ -101,6 +103,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             foreach (var entry in result)
             {
                 temp = entry.Adapt<UserQuizStampDto>();
+                temp.Quiz.QuestionCount = entry.Quiz.Questions.Count;
                 dtos.Add(temp);
             }
 

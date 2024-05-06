@@ -1,0 +1,54 @@
+﻿<div>
+    <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
+    <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-xl dark:text-white">Score: @Score/@QuizDto!.QuestionCount</h5>
+    <p class="text-center text-lg text-gray-700 dark:text-gray-700">You got <span class="text-green-700 font-bold">@Points points</span> and earned <span class="text-blue-300 font-bold">@Experience experience</span>!</p>
+</div>
+
+@if (GameMode == GameMode.MULTIPLAYER)
+{ 
+    <div class="mt-8">
+        <h3 class="text-xl font-bold mb-4 text-center">Podium</h3>
+        <div class="flex justify-around">
+            @if (Players != null)
+            {
+                var orderedPlayers = Players.PlayersStates.OrderByDescending(p => p.Value.Points);
+                var podiumPlayers = orderedPlayers.Take(3);
+                int podiumPlace = 1;
+                foreach (var (connectionId, playerState) in podiumPlayers)
+                {
+                    IPlayer player = Players.Users.FirstOrDefault(u => u.ConnectionId == connectionId);
+                    @if (player != null)
+                    {
+                        <div class="text-center">
+                            <p class="text-lg font-bold"> @(podiumPlace). @player.Username</p>
+                        <p class="text-sm">@playerState.Points points</p>
+                        </div>
+                    }
+                    else
+                    {
+                        player = Players.Guests.FirstOrDefault(u => u.ConnectionId == connectionId);
+                        <div class="text-center">
+                            <p class="text-lg font-bold">@(podiumPlace). @player.Username</p>
+                            <p class="text-sm">@playerState.Points points</p>
+                        </div>
+                    }
+                    podiumPlace++;
+                }
+            }
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public QuizDto QuizDto{ get; set; }
+    [Parameter]
+    public int Score { get; set; }
+    [Parameter]
+    public int Points { get; set; }
+    [Parameter]
+    public int Experience { get; set; }
+    [Parameter]
+    public GameMode GameMode { get; set; }
+    [Parameter]
+    public PlayersInLobby Players { get; set; }
+}

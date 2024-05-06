@@ -6,13 +6,15 @@
 @inject IRoomService RoomService
 @if(Mode == null)
 {
-    <div class="=flex gap-4">
-        <a href="/create-game/singleplayer" class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
-            Singleplayer
-        </a>
-        <a href="/create-game/multiplayer" class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
-            Multiplayer
-        </a>
+    <div class="flex justify-center items-center h-screen">
+        <div class="flex flex-col items-center gap-8">
+            <a href="/create-game/singleplayer" class="inline-block text-white font-bold py-10 px-20 rounded-full shadow-lg bg-white/10 backdrop-blur-lg transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
+                Singleplayer
+            </a>
+            <a href="/create-game/multiplayer" class="inline-block text-white font-bold py-10 px-20 rounded-full shadow-lg bg-white/10 backdrop-blur-lg transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out">
+                Multiplayer
+            </a>
+        </div>
     </div>
 }
 
@@ -28,6 +30,9 @@
 
 else if (Quizzes != null && Mode == "multiplayer")
 {
+    <div class="p-4 flex justify-center">
+        <button disabled="@(!_isQuizChosen)" class="inline-block text-white font-bold py-3 px-8 rounded-full shadow-lg bg-white/10 backdrop-blur-lg transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out" @onclick=CreateRoom>Create Room</button>
+    </div>
     <div class="flex gap-4">
         <InputRadioGroup TValue="int" Name="QuizRadioButton" @bind-Value=@_chosenQuiz> 
         @foreach (var quiz in Quizzes)
@@ -47,9 +52,7 @@ else if (Quizzes != null && Mode == "multiplayer")
             <p class="text-4xl font-extrabold text-white dark:text-white">@_roomCode</p>
             }
         </div>
-        <div>
-            <button class="inline-block text-white font-bold py-2 px-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-800 border border-transparent transform hover:scale-110 hover:border-white transition-transform duration-3000 ease-in-out" @onclick=CreateRoom>Create Room</button>
-        </div>
+        
     </div>
 }
 
@@ -58,13 +61,15 @@ else if (Quizzes != null && Mode == "multiplayer")
     public string? Mode { get; set; }
     public List<QuizDto>? Quizzes { get; set; }
 
+    private bool _isQuizChosen => _chosenQuiz == 0 ? false : true;
+
     protected override async Task OnInitializedAsync()
     {
         Quizzes = await QuizRepository.GetAvailableQuizzesDtoAsync();
     }
 
     //------------ MULTIPLAYER MODE ------------------------
-    private int _chosenQuiz;
+    private int _chosenQuiz = 0;
     private string _roomCode = null!;
     private bool _isRoomCodeProcessStarted = false;
 

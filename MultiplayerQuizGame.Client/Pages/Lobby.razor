@@ -18,9 +18,9 @@ else
 
     @if(CurrentRoom != null)
     {
-         <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Room @RoomCode</h2>
+        <h2 class="mb-4 text-center text-4xl font-extrabold text-white">Room <span class="transition ease-in-out hover:text-pink-700 duration-300">@RoomCode</span></h2>
         @if (IsGameStarted)
-        {
+        {   
             <QuizGame Id="@CurrentRoom!.Quiz.Id.ToString()" GameMode="@GameMode.MULTIPLAYER" HubConnection="@HubConnection" RoomCode="@RoomCode" Players="@Players"/>
         }
         <div class="flex gap-4 justify-center pt-4">

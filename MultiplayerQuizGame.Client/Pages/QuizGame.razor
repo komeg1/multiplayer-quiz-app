@@ -17,13 +17,11 @@
 }
 else
 {
-    <div class="w-full h-[350px] p-8 bg-white rounded-lg shadow-lg">
+    <div class="p-4">
+    <div class="w-full h-[380px] p-8 bg-white rounded-lg shadow-lg">
      @if (_isQuizFinished)
       {
-            <h2 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Quiz finished</h2>
-            <h5 class="mb-4 text-center text-4xl font-extrabold leading-none tracking-tight text-black md:text-5xl lg:text-6xl dark:text-white">Score: @_score/@_chosenQuiz!.QuestionCount</h5>
-            
-
+          <FinishedQuizView QuizDto="@ChosenQuiz" Score="@Score" Points="@PointsOvr" Experience="@Experience" Players="Players" GameMode="@GameMode"/>
     }
     else if(_isQuestionFinished)
     {
@@ -37,18 +35,19 @@ else
             {
                 <h2 class="mb-4 text-center text-3xl lg:text-6xl md:text-5xl font-extrabold text-red-700 leading-none">Wrong 😬! You got 0 points</h2>
             }
-            <h2 class="mb-4 text-center text-2xl font-bold leading-none tracking-tight text-black md:text-4xl lg:text-3xl dark:text-white">You have:@_pointsOvr points 🔥</h2>
+            <h2 class="mb-4 text-center text-2xl font-bold leading-none tracking-tight text-black md:text-4xl lg:text-3xl dark:text-white">You have:@PointsOvr points 🔥</h2>
 
     }
-    @if (_chosenQuiz != null && !_isQuizFinished && !_isQuestionFinished)
+    @if (ChosenQuiz != null && !_isQuizFinished && !_isQuestionFinished)
     {
         <span class="bg-green-700 text-green-100 text-sm font-bold me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Time: @_countdownText</span>
-        <span>Score: @_score/@_chosenQuiz.QuestionCount</span>
-        <span>Points: @_pointsOvr</span>
+        <span>Score: @Score/@ChosenQuiz.QuestionCount</span>
+        <span>Points: @PointsOvr</span>
             <CurrentQuestion Question="CurrentQuestion" OnAnswerCheck="CheckAnswer" />
        
     }
     
+    </div>
     </div>
 
 
@@ -69,12 +68,14 @@ else
 
     private int _countdownSeconds = MAX_QUESTION_SECONDS;
     private int _resultSeconds = MAX_RESULT_SECONDS;
-    private int _score = 0;
     private int _questionNr = 0;
     private int _experienceThisRnd = 0;
-    private int _experience = 0;
-    private float _pointsThisRnd = 0;
-    private float _pointsOvr = 0;
+    private int _pointsThisRnd = 0;
+
+    public int Score { get; set; } = 0;
+    public int Experience { get; set; } = 0;
+    public int PointsOvr { get; set; } = 0;
+    public QuizDto? ChosenQuiz { get; set; }
 
     private string _countdownText => $"{_countdownSeconds/60:00}:{_countdownSeconds}";
     private string _resultCountdownText => $"{_resultSeconds / 60:00}:{_resultSeconds}";
@@ -84,7 +85,6 @@ else
     private Timer _resultTimer = null!;
 
     private UserQuizStampDto? _stampDto;
-    private QuizDto? _chosenQuiz;
 
     public QuestionDto? CurrentQuestion;
 
@@ -115,11 +115,11 @@ else
             }
         }
 
-        _chosenQuiz = await QuizRepository.GetQuizDtoAsync(Int32.Parse(Id));
-        CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(_chosenQuiz.Id, _questionNr++);
+        ChosenQuiz = await QuizRepository.GetQuizDtoAsync(Int32.Parse(Id));
+        CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(ChosenQuiz.Id, _questionNr++);
         try
         {
-            _stampDto = await UserRepository.SaveQuizStamp(new UserQuizStampDto { Quiz = _chosenQuiz, GameMode = GameMode});
+            _stampDto = await UserRepository.SaveQuizStamp(new UserQuizStampDto { Quiz = ChosenQuiz, GameMode = GameMode});
         }
         catch (Exception ex)
         {
@@ -140,9 +140,9 @@ else
 
     public async void ChangeQuestion()
     {
-        if (_questionNr < _chosenQuiz.QuestionCount)
+        if (_questionNr < ChosenQuiz.QuestionCount)
         {
-            CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(_chosenQuiz.Id, _questionNr++);
+            CurrentQuestion = await QuizRepository.GetQuestionDtoAsync(ChosenQuiz.Id, _questionNr++);
 
         }
         else
@@ -152,7 +152,7 @@ else
             Dispose(_questionTimer);
             Dispose(_resultTimer);
             if (_stampDto != null)
-                UpdateStampPoints((int)_pointsOvr, _score, _experience);
+                UpdateStampPoints((int)PointsOvr, Score, Experience);
             StateHasChanged();
         }
 
@@ -163,7 +163,7 @@ else
     {
         try
         {
-            await HubConnection.InvokeAsync("ChangePoints", RoomCode, HubConnection.ConnectionId, (int)_pointsOvr);
+            await HubConnection.InvokeAsync("ChangePoints", RoomCode, HubConnection.ConnectionId, (int)PointsOvr);
         }
         catch (Exception ex)
         {
@@ -173,11 +173,11 @@ else
     public void IncrementScore()
     {
         Console.WriteLine(MAX_QUESTION_SCORE * (_countdownSeconds / MAX_QUESTION_SECONDS));
-        _pointsThisRnd = (MAX_QUESTION_SCORE * ((float)_countdownSeconds / (float)MAX_QUESTION_SECONDS));
-        _pointsOvr += _pointsThisRnd;
-        _score++;
+        _pointsThisRnd = (int)(MAX_QUESTION_SCORE * ((float)_countdownSeconds / (float)MAX_QUESTION_SECONDS));
+        PointsOvr += _pointsThisRnd;
+        Score++;
         _experienceThisRnd = CORRECT_ANS_EXP;
-        _experience += CORRECT_ANS_EXP;
+        Experience += CORRECT_ANS_EXP;
         if (GameMode == GameMode.MULTIPLAYER)
         {
             IncrementScoreAsync();
