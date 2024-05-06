@@ -1,5 +1,5 @@
 # Multiplayer Quiz App
-A multiplayer quiz app that allows users to create a room and join a room to play a quiz game. The app is built using ASP.NET, Blazor, EF Core, and SignalR.
+A multiplayer quiz app that allows users to play simple trivia games singleplayer or multiplayer. The app is built using ASP.NET, Blazor, EF Core, and SignalR.
 
 # Live
 The app is hosted on Azure, you can try it [here](https://multiplayerquizgame.azurewebsites.net/)
