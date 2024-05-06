@@ -27,6 +27,8 @@ Choose a room from the list of available rooms or provide a room code to join a 
 - Visible avatars in lobby
 - More statistics on user page
 - Responsive design
+- Kicking players from lobby
+- Making a lobby private
 ## Technologies
 - ASP.NET Core
 - Blazor
