@@ -11,17 +11,17 @@ For testing, you can use the following credentials:
 # Features
 ## Play a quiz game
 Choose a single player or multiplayer mode to play a quiz game. In the live demo, there's only one quiz available.
-![quiz game](https://github.com/komeg1/blob/main/images/quizgame.jpg)
+![quiz game](https://github.com/komeg1/multiplayer-quiz-app/blob/main/images/quizgame.jpg)
  ## Host a multiplayer room
  Create a room and share the room code with your friends to join the room and play a quiz game together.
-![lobby](https://github.com/komeg1/blob/main/images/lobby.jpg)
+![lobby](https://github.com/komeg1/multiplayer-quiz-app/blob/main/images/lobby.jpg)
 ## Lobby finder
 Choose a room from the list of available rooms or provide a room code to join a room.
-![lobby finder](https://github.com/komeg1/blob/main/images/lobby%20finder.jpg)
+![lobby finder](https://github.com/komeg1/multiplayer-quiz-app/blob/main/images/lobby%20finder.jpg)
 ## Real-time lobby and scoreboard updates using SignalR
-![quiz result](https://github.com/komeg1/blob/main/images/quizresult.jpg)
+![quiz result](https://github.com/komeg1/multiplayer-quiz-app/blob/main/images/quizresult.jpg)
 ## User accounts with levels and experience points
-![user page](https://github.com/komeg1/blob/main/images/userpage.png)
+![user page](https://github.com/komeg1/multiplayer-quiz-app/blob/main/images/userpage.png)
 ## Soon to be added
 - Leaderboards
 - Visible avatars in lobby
