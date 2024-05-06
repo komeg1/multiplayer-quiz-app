@@ -13,5 +13,7 @@ namespace MultiplayerQuizGame.Shared.Models
         public int Points { get; set; }
         //How many correct answers
         public int Score { get; set; }
+
+        public string? AvatarB64 { get; set; } = string.Empty;
     }
 }

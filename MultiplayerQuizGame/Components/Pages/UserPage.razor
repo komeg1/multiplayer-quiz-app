@@ -1,37 +1,56 @@
 ﻿@inject AuthenticationStateProvider AuthStateProvider
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
 @attribute [Authorize(Roles = "LoggedUser")]
 @inject IUserRepository UserRepository
+@inject IUserService UserService
 
 @page "/user-page"
 
-
-@if (_userDto != null)
+@if(isLoaded == true)
 {
-    <div class="p-4">
-        <div class="bg-white/20 backdrop-blur-lg shadow-lg w-full md:max-w-4xl rounded-lg p-1">
+    @if (_userDto != null)
+    {
+        <div class="p-4">
+            <div class="bg-white/20 backdrop-blur-lg shadow-lg w-full md:max-w-4xl rounded-lg p-1">
 
-            <div class="pt-4 pl-4 text-2xl font-bold text-white transition-colors duration-300 ease-in-out hover:text-blue-700">
-                <span>Hello, @_username</span>
-            </div>
-            <div>
-                <span>Upload avatar</span>
-                <InputFile OnChange="OnFileUploadChange"/>
-            </div>
-            <div class="p-1">
-                <span class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Level @_userDto.Level</span>
-            </div>
-            <div class="p-1">
-                <div class="w-1/2 bg-gray-200 rounded-full dark:bg-gray-700">
-                    <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: @(_levelProgressInPercent)%"> @(_levelProgressInPercent)%</div>
+                <div class="pt-4 pl-4 text-2xl font-bold text-white transition-colors duration-300 ease-in-out hover:text-blue-700">
+                    <UserAvatar AvatarBase64="@AvatarBase64" />
+                    <span>Hello, @_username</span>
+                    
                 </div>
-            </div>
+                <div>
+                    <span>Upload avatar</span>
+                    <div>
+                    <InputFile OnChange="OnFileUploadChange"/>
+                    </div>
+                </div>
+                <div class="p-1">
+                    <span class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Level @_userDto.Level</span>
+                </div>
+                <div class="p-1">
+                    <div class="w-1/2 bg-gray-200 rounded-full dark:bg-gray-700">
+                        <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: @(_levelProgressInPercent)%"> @(_levelProgressInPercent)%</div>
+                    </div>
+                </div>
 
+            </div>
         </div>
-    </div>
-    <div class="p-4">
-        <div class="bg-white/20 backdrop-blur-lg shadow-lg w-full md:max-w-4xl rounded-lg p-1">
-            <GameHistory UserId="int.Parse(_userId)"/>
+        <div class="p-4">
+            <div class="bg-white/20 backdrop-blur-lg shadow-lg w-full md:max-w-4xl rounded-lg p-1">
+                @if (GameHistory != null)
+                {
+                    <GameHistory GameHistoryList="GameHistory"/>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="p-4 flex justify-center">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
+             role="status">
+            <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
         </div>
     </div>
 }
@@ -39,12 +58,16 @@
 
 
 @code {
+    public List<UserQuizStampDto> GameHistory { get; set; } = new List<UserQuizStampDto>();
+    public string AvatarBase64 { get; set; } = string.Empty;
 
     private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
     private string _username = string.Empty;
     private string _userId = string.Empty;
     private UserDto _userDto;
     private int _levelProgressInPercent;
+    private bool isLoaded = false;
+
     protected async override Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -59,13 +82,40 @@
         if(_userId != string.Empty)
         {
             _userDto = await UserRepository.GetUserDtoByIdAsync(Int32.Parse(_userId));
+            GameHistory = await UserRepository.GetUserGameHistory(_userDto.Id);
+            AvatarBase64 = await UserRepository.GetUserAvatar(_userDto.Id);
+
+
             SetLevelProgress();
         }
+
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            
+            isLoaded = true;
+        }
+    }
     protected async Task OnFileUploadChange(InputFileChangeEventArgs e)
     {
+        if (e.File == null)
+        {
+            return;
+        }
 
+        // Read the file content into a MemoryStream
+        using (MemoryStream ms = new MemoryStream())
+        {
+            await e.File.OpenReadStream().CopyToAsync(ms);
+
+            // Convert the MemoryStream to a byte array
+            byte[] avatarByteArray = ms.ToArray();
+            _userDto = await UserRepository.UpdateAvatar(Int32.Parse(_userId), avatarByteArray);
+            StateHasChanged();
+        }
     }
 
     void SetLevelProgress()

@@ -7,6 +7,7 @@ using MultiplayerQuizGame.Shared.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,13 +32,18 @@ namespace MultiplayerQuizGame.Shared.Services.Server
             if (user != default)
                 return new User { Username = string.Empty };
 
+
+
             user = new User
             {
                 Username = registerCredentials.Username,
                 PasswordSalt = PasswordHasher.GenerateSalt(),
                 Level = 0,
                 Experience = 0,
+                AvatarB64 = "",
             };
+
+
             user.PasswordHash = PasswordHasher.ComputeHash(registerCredentials.Password, user.PasswordSalt, _pepper, _iteration);
             await _userRepository.AddUser(user);
 

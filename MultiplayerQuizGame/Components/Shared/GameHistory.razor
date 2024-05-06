@@ -1,6 +1,5 @@
 ﻿@inject IUserRepository UserRepository
-@if(_isLoaded)
-{
+
     <div class="p-4">
     <div class="bg-white w-full md:max-w-4xl rounded-lg shadow p-1">
         <table class="w-full md:max-w-4xl">
@@ -16,7 +15,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var entry in _gameHistory)
+                    @foreach (var entry in GameHistoryList)
                 {
                         <tr class="even:bg-gray-200 odd:bg-white transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-102 hover:bg-indigo-400 hover:text-white duration-300">
                     <th>
@@ -50,25 +49,14 @@
         </table>
     </div>
     </div>
-}
-else
-{
-    <span>Loading...</span>
 
-}
+
 
 @code {
+
     [Parameter]
-    public int UserId { get; set; }
+    public List<UserQuizStampDto> GameHistoryList { get; set; } = new List<UserQuizStampDto>();
 
-    private List<UserQuizStampDto> _gameHistory = new List<UserQuizStampDto>();
-    private bool _isLoaded = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _gameHistory = await UserRepository.GetUserGameHistory(UserId);
-        _isLoaded = true;
-    }
 
     
     }

@@ -79,12 +79,13 @@ else
             return;
         }
 
-        HubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
+        HubConnection.On<PlayersInLobby>("PlayerJoined", async (players) =>
         {
 
             foreach (var player in Players.Users)
             {
                 players.PlayersStates[player.ConnectionId].IsReady = Players.PlayersStates[player.ConnectionId].IsReady;
+
             }
             foreach (var player in Players.Guests)
             {

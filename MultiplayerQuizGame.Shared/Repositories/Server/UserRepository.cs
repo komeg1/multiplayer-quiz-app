@@ -5,6 +5,10 @@ using MultiplayerQuizGame.Shared.Enums;
 using MultiplayerQuizGame.Shared.Models;
 using MultiplayerQuizGame.Shared.Models.DTO;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Buffers.Text;
+using System.Net.NetworkInformation;
 
 
 namespace MultiplayerQuizGame.Shared.Repositories.Server
@@ -34,7 +38,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
             return user;
         }
-        public async Task AddUser(User user)    
+        public async Task AddUser(User user)
         {
             await _context.User.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -55,7 +59,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             var savedStamp = await _context.UserQuizStamp.AddAsync(stamp);
             await _context.SaveChangesAsync();
 
-            UserQuizStampDto dto= savedStamp.Entity.Adapt<UserQuizStampDto>();
+            UserQuizStampDto dto = savedStamp.Entity.Adapt<UserQuizStampDto>();
             dto.Quiz.QuestionCount = stamp.Quiz.Questions.Count;
             return savedStamp.Entity.Adapt<UserQuizStampDto>();
         }
@@ -63,8 +67,8 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public async Task UpdateStamp(int stampId, int points, int score, int experience)
         {
             var stamp = _context.UserQuizStamp.
-                Include(s=>s.User).
-                FirstOrDefault(s=>s.Id == stampId);
+                Include(s => s.User).
+                FirstOrDefault(s => s.Id == stampId);
 
             //Eventually move to separate method call
             try
@@ -76,7 +80,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 Console.WriteLine(ex);
             }
 
-            if(stamp != null)
+            if (stamp != null)
             {
                 stamp.Points = points;
                 stamp.Score = score;
@@ -88,13 +92,13 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public async Task<List<UserQuizStampDto>> GetUserGameHistory(int userId)
         {
             var result = await _context.UserQuizStamp.
-                Include(s=>s.Quiz).
+                Include(s => s.Quiz).
                 Where(s => s.User.Id == userId).
                 ToListAsync();
 
             List<UserQuizStampDto> dtos = new List<UserQuizStampDto>();
             UserQuizStampDto temp;
-            foreach (var entry in result )
+            foreach (var entry in result)
             {
                 temp = entry.Adapt<UserQuizStampDto>();
                 dtos.Add(temp);
@@ -111,11 +115,19 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
         public async Task<UserDto> GetUserDtoByIdAsync(int id)
         {
             var user = await GetUserByIdAsync(id);
-            if(user!= null)
+            if (user != null)
             {
                 return user.Adapt<UserDto>();
             }
             return null!;
+        }
+        public async Task<UserDto> UpdateAvatar(int userId, byte[] avatarBytes)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.AvatarB64 = "data:image / png; base64," + Convert.ToBase64String(avatarBytes);
+            await _context.SaveChangesAsync();
+
+            return user.Adapt<UserDto>();
         }
 
         public async Task UpdateExperience(int userId, int experience)
@@ -129,6 +141,12 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             await _context.SaveChangesAsync();
 
 
+        }
+        public async Task<string> GetUserAvatar(int id)
+        {
+            var user = await GetUserByIdAsync(id);
+
+            return user.AvatarB64;
         }
     }
 

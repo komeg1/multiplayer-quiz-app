@@ -35,7 +35,7 @@ namespace MultiplayerQuizGame.Components.Hubs
         }
         public async override Task<Task> OnDisconnectedAsync(Exception? exception)
         {
-            var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
+             var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
             if (room != null)
             {
                 await Clients.Group(room.RoomCode).SendAsync("OnPlayerDisconnect", Context.ConnectionId);

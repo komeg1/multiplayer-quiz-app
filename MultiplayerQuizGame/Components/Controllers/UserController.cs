@@ -94,12 +94,21 @@ namespace MultiplayerQuizGame.Components.Controllers
         }
 
         [HttpGet]
-        [Route("user/{id}")]
+        [Route("{id}")]
         public async Task<ActionResult<UserDto>> GetUserDtoByIdAsync(string id)
         {
             var result = await _userRepository.GetUserDtoByIdAsync(Int32.Parse(id));
             if (result == null)
                 return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("{id}/avatar")]
+        public async Task<ActionResult<string>> GetUserAvatar(string id)
+        {
+            var result = await _userRepository.GetUserAvatar(Int32.Parse(id));
 
             return Ok(result);
         }

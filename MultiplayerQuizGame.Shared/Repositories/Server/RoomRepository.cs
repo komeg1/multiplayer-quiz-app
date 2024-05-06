@@ -55,7 +55,7 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
                 AsSplitQuery().
                 FirstOrDefaultAsync();
 
-            Console.WriteLine(room.RoomCode);
+            
             if (room != null)
             {
                 IPlayer playerToRemove;

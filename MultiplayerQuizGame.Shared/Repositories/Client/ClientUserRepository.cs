@@ -78,5 +78,20 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
             throw new NotImplementedException();
         }
 
+        public Task<UserDto> UpdateAvatar(int userId, byte[] avatarBytes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<string> GetUserAvatar(int id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<string>($"/api/user/{id}/avatar");
+            if(result == null)
+            {
+                return string.Empty;
+            }
+
+            return result;
+        }
     }
 }
