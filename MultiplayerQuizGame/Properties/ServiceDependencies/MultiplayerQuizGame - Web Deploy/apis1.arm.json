@@ -82,6 +82,7 @@
                 },
                 "virtualNetworkType": "None",
                 "certificates": null,
+                "enableClientCertificate": false,
                 "disableGateway": false,
                 "apiVersionConstraint": {
                   "minApiVersion": null
@@ -97,11 +98,11 @@
               "type": "Microsoft.ApiManagement/service/apis",
               "name": "MultiplayerQuizGameapi/MultiplayerQuizGame",
               "properties": {
-                "displayName": "MultiplayerQuizGame",
+                "displayName": "MultiplayerQuizGame, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "apiRevision": "1",
                 "description": null,
                 "subscriptionRequired": true,
-                "serviceUrl": null,
+                "serviceUrl": "https://multiplayerquizgame.azurewebsites.net",
                 "path": "multiplayerquizapp",
                 "protocols": [
                   "https"

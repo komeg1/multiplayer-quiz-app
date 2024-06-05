@@ -67,16 +67,13 @@ builder.Services.AddAzureClients(clientBuilder =>
 
 
 var app = builder.Build();
-app.UseSwagger();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
     
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
-    });
+    
 }
 else
 {
@@ -92,6 +89,11 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();
 app.UseAuthorization();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
+});
 
 
 
