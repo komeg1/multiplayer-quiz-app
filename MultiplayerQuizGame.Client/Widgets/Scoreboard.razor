@@ -1,107 +1,101 @@
 ﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
-   
-    <div class="bg-white w-full md:max-w-4xl rounded-lg shadow">
-        <div class="h-12 flex justify-between items-center border-b border-gray-200 m-4">
-            <div>
 
-                <div class="text-xl font-bold text-gray-700">@_hostUsername Lobby</div>
-                @if (!IsGameStarted)
-                {
-                    <div class="text-sm font-base text-gray-500">@(_freePlayerSpots != 0 ? "Waiting for more players..." : "Lobby full")</div>
-                }
-            </div>
-        </div>
-        <div class="px-6">
-        @foreach (var player in Players.Users)
-        {
-                <div class="flex justify-around items-center h-16 p-4 my-6  rounded-lg border border-gray-100 shadow-md">
-                    <div class="flex items-center">
-                        <UserAvatar AvatarBase64="@Players.PlayersStates[player.ConnectionId].AvatarB64"/>
-                        <div class="ml-2">
-                            <div class="text-sm font-semibold text-gray-600">@player.Username</div>
-                            <div class="text-sm font-light text-gray-500"></div>
-                        </div>
-                    </div>
-                    @if (!IsGameStarted)
-                    {
-                        <div>
-                            <button class="@($"bg-{(Players.PlayersStates[player.ConnectionId].IsReady == true ? "green-400 hover:bg-green-500" : "red-400 hover:bg-red-500")} p-2 rounded-full shadow-md flex justify-center items-center")"/>
-
-                        </div>
-                        <div>
-                            @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId)
-                            {
-                                <button class="bg-red-400 hover:bg-red-500 p-2 rounded-full shadow-md flex justify-center items-center">
-                                    <svg class="toggle__lock w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div>
-                            <div class="text-sm font-semibold text-gray-600">@Players.PlayersStates[player.ConnectionId].Points</div>
-                        </div>
-                    }
-                </div>
-        }
-        @foreach(var player in Players.Guests)
+<div class="bg-white w-full md:max-w-4xl rounded-lg shadow">
+    <div class="h-12 flex justify-between items-center border-b border-gray-200 m-4">
+        <div>
+            <div class="text-xl font-bold text-gray-700">@_hostUsername Lobby</div>
+            @if (!IsGameStarted)
             {
-                <div class="flex justify-between items-center h-16 p-4 my-6  rounded-lg border border-gray-100 shadow-md">
-                    <div class="flex items-center">
-                    <UserAvatar AvatarBase64="@Players.PlayersStates[player.ConnectionId].AvatarB64" />
-                        <div class="ml-2">
-                            <div class="text-sm font-semibold text-gray-600">@player.Username</div>
-                            <div class="text-sm font-light text-gray-500"></div>
-                        </div>
-                    </div>
-                    @if (!IsGameStarted)
-                    {
-                        <div>
-                            <button class="@($"bg-{(Players.PlayersStates[player.ConnectionId].IsReady == true ? "green-400 hover:bg-green-500" : "red-400 hover:bg-red-500")} p-2 rounded-full shadow-md flex justify-center items-center")" />
-                        </div>
-                        <div>
-                        @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId)
-                            {
-                                <button class="bg-red-400 hover:bg-red-500 p-2 rounded-full shadow-md flex justify-center items-center">
-                                    <svg class="toggle__lock w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div>
-                            <div class="text-sm font-semibold text-gray-600">@Players.PlayersStates[player.ConnectionId].Points</div>
-                        </div>
-                    }
-                </div>
-            }
-          @for(int i=0;i<_freePlayerSpots;i++)
-            {
-                <div class="flex bg-gray-200 justify-center items-center h-16 p-4 my-6  rounded-lg  shadow-inner">
-                    
-              </div>
-
-            }
-            @if(!IsGameStarted)
-            {
-                <div class="p-6 ">
-                    <button @onclick=HandleReadyButton class="p-4 bg-green-400 hover:bg-green-500 w-full rounded-lg shadow text-xl font-medium uppercase text-white">Ready</button>
-                    
-                    @if (CurrentRoom.HostConnectionId == HubConnection.ConnectionId)
-                    {
-                     <button @onclick=HandlePlayButton class="@($"bg-{(IsReadyButtonEnabled ? "green-400 hover:bg-green-500" : "gray-400 hover:bg-gray-500")} p-4 w-full rounded-lg shadow text-xl font-medium uppercase text-white ")" disabled="@(!IsReadyButtonEnabled)">Start the game</button>
-                    }
-                </div>
+                <div class="text-sm font-base text-gray-500">@(_freePlayerSpots != 0 ? "Waiting for more players..." : "Lobby full")</div>
             }
         </div>
     </div>
+    <div class="px-6">
+        @foreach (var player in Players.Users)
+        {
+            <div class="grid grid-cols-[1fr_auto_auto] gap-4 items-center h-16 pl-4 pr-4 my-6 rounded-lg border border-gray-100 shadow-md">
+                <div class="flex items-center">
+                    <UserAvatar AvatarFilename="@player.AzureAvatarName" />
+                    <div class="ml-2">
+                        <div class="text-sm font-semibold text-gray-600">@player.Username</div>
+                        <div class="text-sm font-light text-gray-500"></div>
+                    </div>
+                </div>
+                @if (!IsGameStarted)
+                {
+                    <div class="flex items-center justify-center">
+                        <button class="@($"bg-{(Players.PlayersStates[player.ConnectionId].IsReady == true ? "green-400 hover:bg-green-500" : "red-400 hover:bg-red-500")} p-2 rounded-full shadow-md flex justify-center items-center")"></button>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId)
+                        {
+                            <button class="bg-red-400 hover:bg-red-500 p-2 rounded-full shadow-md flex justify-center items-center" @onclick="(()=>KickPlayer(player.ConnectionId))">
+                                <svg class="toggle__lock w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="flex items-center justify-center">
+                        <div class="text-sm font-semibold text-gray-600">@Players.PlayersStates[player.ConnectionId].Points</div>
+                    </div>
+                }
+            </div>
+        }
+        @foreach (var player in Players.Guests)
+        {
+            <div class="grid grid-cols-[1fr_auto_auto] gap-4 items-center h-16 pl-4 pr-4 my-6 rounded-lg border border-gray-100 shadow-md">
+                <div class="flex items-center">
+                    <UserAvatar AvatarBase64="@Players.PlayersStates[player.ConnectionId].AvatarB64" />
+                    <div class="ml-2">
+                        <div class="text-sm font-semibold text-gray-600">@player.Username</div>
+                        <div class="text-sm font-light text-gray-500"></div>
+                    </div>
+                </div>
+                @if (!IsGameStarted) 
+                {
+                    <div class="flex items-center justify-center">
+                        <button class="@($"bg-{(Players.PlayersStates[player.ConnectionId].IsReady == true ? "green-400 hover:bg-green-500" : "red-400 hover:bg-red-500")} p-2 rounded-full shadow-md flex justify-center items-center")"></button>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId && player.ConnectionId != CurrentRoom.HostConnectionId)
+                        {
+                            <button class="bg-red-400 hover:bg-red-500 p-2 rounded-full shadow-md flex justify-center items-center" @onclick="(()=>KickPlayer(player.ConnectionId))">
+                                <svg class="toggle__lock w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="flex items-center justify-center">
+                        <div class="text-sm font-semibold text-gray-600">@Players.PlayersStates[player.ConnectionId].Points</div>
+                    </div>
+                }
+            </div>
+        }
+        @for (int i = 0; i < _freePlayerSpots; i++)
+        {
+            <div class="flex bg-gray-200 justify-center items-center h-16 p-4 my-6 rounded-lg shadow-inner"></div>
+        }
+        @if (!IsGameStarted)
+        {
+            <div class="p-6">
+                <button @onclick=HandleReadyButton class="p-4 bg-green-400 hover:bg-green-500 w-full rounded-lg shadow text-xl font-medium uppercase text-white">Ready</button>
+                @if (CurrentRoom.HostConnectionId == HubConnection.ConnectionId)
+                {
+                    <button @onclick=HandlePlayButton class="@($"bg-{(IsReadyButtonEnabled ? "green-400 hover:bg-green-500" : "gray-400 hover:bg-gray-500")} p-4 w-full rounded-lg shadow text-xl font-medium uppercase text-white ")" disabled="@(!IsReadyButtonEnabled)">Start the game</button>
+                }
+            </div>
+        }
+    </div>
+</div>
 
    
 
@@ -123,7 +117,7 @@
     public PlayersInLobby Players { get; set; }
     [Parameter]
     public EventCallback ReadyButtonHandler { get; set; }
-    
+
 
 
     private string _hostUsername = null!;
@@ -141,6 +135,11 @@
     {
         await ReadyButtonHandler.InvokeAsync();
     }
+    public async Task KickPlayer(string connectionId)
+    {
+        await HubConnection.InvokeAsync("DisconnectClient", connectionId, CurrentRoom.RoomCode);
+    }
+
 
 
 }

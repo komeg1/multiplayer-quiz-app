@@ -93,5 +93,10 @@ namespace MultiplayerQuizGame.Shared.Repositories.Client
 
             return result;
         }
+
+        public Task UpdateAvatarName(int userId, string avatarName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -15,13 +15,11 @@ namespace MultiplayerQuizGame.Shared.Repositories.Interfaces
         Task<User> GetUserByIdAsync(int id);
         Task<User> GetUserByUsernameAsync(string username);
         Task<UserDto> GetUserDtoByIdAsync(int id);
-        Task<string> GetUserAvatar(int id);
         Task AddUser(User user);
         Task<UserQuizStampDto> SaveQuizStamp(UserQuizStampDto stampDto);
         Task UpdateStamp(int stampId, int points, int score, int experience);
         Task<List<UserQuizStampDto>> GetUserGameHistory(int id);
-
-        Task<UserDto> UpdateAvatar(int userId, byte[] avatarBytes);
         Task UpdateExperience(int userId, int experience);
+        Task UpdateAvatarName(int userId, string avatarName);
     }
 }

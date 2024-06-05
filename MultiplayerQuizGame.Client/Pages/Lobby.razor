@@ -78,8 +78,11 @@ else
             Console.WriteLine(ex.Message);
             return;
         }
-
-        HubConnection.On<PlayersInLobby>("PlayerJoined", async (players) =>
+        HubConnection.On("OnDisconnect", () =>
+       {
+           HubConnection.DisposeAsync();
+       });
+        HubConnection.On<PlayersInLobby>("PlayerJoined", (players) =>
         {
 
             foreach (var player in Players.Users)

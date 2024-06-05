@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using MultiplayerQuizGame.Shared.Services.Server;
 using MultiplayerQuizGame.Shared.Repositories.Server;
 using MultiplayerQuizGame.Components.Hubs;
+using Microsoft.Extensions.Azure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoomService,RoomService>();
+builder.Services.AddScoped<IFileService,FileService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen();
@@ -54,16 +56,27 @@ builder.Services.AddAuthorization(options =>
 	options.AddPolicy("LoggedUserOnly", policy => policy.RequireClaim(ClaimTypes.Role, "LoggedUser"));
 });
 builder.Services.AddCascadingAuthenticationState();
+var configuration = builder.Configuration;
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(configuration["Azure:BlobServiceConnectionString"]!, preferMsi: true);
+    clientBuilder.AddQueueServiceClient(configuration["Azure:BlobServiceConnectionString"]!, preferMsi: true);
+});
 
 
 
 
 var app = builder.Build();
-
+app.UseSwagger();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
+    });
 }
 else
 {
@@ -79,11 +92,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();
 app.UseAuthorization();
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
-});
+
 
 
 app.MapRazorComponents<App>()

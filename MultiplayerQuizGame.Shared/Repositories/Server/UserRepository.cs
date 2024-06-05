@@ -124,14 +124,6 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
             }
             return null!;
         }
-        public async Task<UserDto> UpdateAvatar(int userId, byte[] avatarBytes)
-        {
-            var user = await GetUserByIdAsync(userId);
-            user.AvatarB64 = "data:image / png; base64," + Convert.ToBase64String(avatarBytes);
-            await _context.SaveChangesAsync();
-
-            return user.Adapt<UserDto>();
-        }
 
         public async Task UpdateExperience(int userId, int experience)
         {
@@ -145,11 +137,12 @@ namespace MultiplayerQuizGame.Shared.Repositories.Server
 
 
         }
-        public async Task<string> GetUserAvatar(int id)
-        {
-            var user = await GetUserByIdAsync(id);
 
-            return user.AvatarB64;
+        public async Task UpdateAvatarName(int userId, string avatarName)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.AzureAvatarName = avatarName;
+            await _context.SaveChangesAsync();
         }
     }
 

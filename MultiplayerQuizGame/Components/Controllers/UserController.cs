@@ -104,17 +104,6 @@ namespace MultiplayerQuizGame.Components.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id}/avatar")]
-        public async Task<ActionResult<string>> GetUserAvatar(string id)
-        {
-            var result = await _userRepository.GetUserAvatar(Int32.Parse(id));
-
-            return Ok(result);
-        }
-
-
-
         public class StampData
         {
             public int Points { get; set; }

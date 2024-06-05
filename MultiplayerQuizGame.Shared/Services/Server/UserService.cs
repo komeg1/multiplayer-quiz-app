@@ -40,7 +40,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
                 PasswordSalt = PasswordHasher.GenerateSalt(),
                 Level = 0,
                 Experience = 0,
-                AvatarB64 = "",
+                AzureAvatarName = "default.jpg"
             };
 
 

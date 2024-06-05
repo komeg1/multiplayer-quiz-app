@@ -3,18 +3,19 @@
 @attribute [Authorize(Roles = "LoggedUser")]
 @inject IUserRepository UserRepository
 @inject IUserService UserService
-
+@inject IFileService FileService
+@inject NavigationManager NavigationManager
 @page "/user-page"
 
 @if(isLoaded == true)
 {
-    @if (_userDto != null)
+    @if (UserDto != null)
     {
         <div class="p-4">
             <div class="bg-white/20 backdrop-blur-lg shadow-lg w-full md:max-w-4xl rounded-lg p-1">
 
                 <div class="flex flex-col items-center justify-center pt-4 pl-4">
-                    <UserAvatar AvatarBase64="@AvatarBase64" />
+                    <UserAvatar AvatarFilename="@UserDto.AzureAvatarName" />
                     <div class="mt-2 text-2xl font-bold text-white">
                         Hello, @_username
                     </div>
@@ -26,7 +27,7 @@
                     </div>
                 </div>
                 <div class="p-1">
-                    <span class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Level @_userDto.Level</span>
+                    <span class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Level @UserDto.Level</span>
                 </div>
                 <div class="p-1">
                     <div class="w-1/2 bg-gray-200 rounded-full dark:bg-gray-700">
@@ -60,12 +61,10 @@ else
 
 @code {
     public List<UserQuizStampDto> GameHistory { get; set; } = new List<UserQuizStampDto>();
-    public string AvatarBase64 { get; set; } = string.Empty;
-
     private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
     private string _username = string.Empty;
-    private string _userId = string.Empty;
-    private UserDto _userDto;
+    public string UserId = string.Empty;
+    public UserDto UserDto { get; set; }
     private int _levelProgressInPercent;
     private bool isLoaded = false;
 
@@ -78,15 +77,12 @@ else
         {
             _claims = userState.Claims;
             _username = _claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value;
-            _userId   = _claims.FirstOrDefault(c => c.Type is "id")?.Value;
+            UserId   = _claims.FirstOrDefault(c => c.Type is "id")?.Value;
         }
-        if(_userId != string.Empty)
+        if(UserId != string.Empty)
         {
-            _userDto = await UserRepository.GetUserDtoByIdAsync(Int32.Parse(_userId));
-            GameHistory = await UserRepository.GetUserGameHistory(_userDto.Id);
-            AvatarBase64 = await UserRepository.GetUserAvatar(_userDto.Id);
-
-
+            UserDto = await UserRepository.GetUserDtoByIdAsync(Int32.Parse(UserId));
+            GameHistory = await UserRepository.GetUserGameHistory(UserDto.Id);
             SetLevelProgress();
         }
 
@@ -95,6 +91,8 @@ else
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         isLoaded = true;
+
+      
     }
     protected async Task OnFileUploadChange(InputFileChangeEventArgs e)
     {
@@ -103,21 +101,14 @@ else
             return;
         }
 
-        // Read the file content into a MemoryStream
-        using (MemoryStream ms = new MemoryStream())
-        {
-            await e.File.OpenReadStream().CopyToAsync(ms);
+        await FileService.SaveUserAvatarAsync(e.File, Int32.Parse(UserId));
+        NavigationManager.NavigateTo("/user-page",true);
 
-            // Convert the MemoryStream to a byte array
-            byte[] avatarByteArray = ms.ToArray();
-            _userDto = await UserRepository.UpdateAvatar(Int32.Parse(_userId), avatarByteArray);
-            StateHasChanged();
-        }
     }
 
     void SetLevelProgress()
     {
-        _levelProgressInPercent = _userDto.Experience % 100;
+        _levelProgressInPercent = UserDto.Experience % 100;
         StateHasChanged();
     }
 

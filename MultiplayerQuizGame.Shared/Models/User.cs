@@ -16,7 +16,7 @@ namespace MultiplayerQuizGame.Shared.Models
         public string Username { get; set; }
         public string PasswordHash { get; set; }
         public string PasswordSalt { get; set; }
-        public string AvatarB64 { get; set; }
+        public string AzureAvatarName { get; set; }
         public List<Room>? Rooms { get; set; }
         public int Level { get; set; }
         public int Experience { get; set; }

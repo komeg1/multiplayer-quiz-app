@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using MultiplayerQuizGame.Shared.Models;
@@ -30,11 +31,11 @@ namespace MultiplayerQuizGame.Components.Hubs
             Console.WriteLine($"Player: {Context.ConnectionId}");
 
             var openRooms = await _roomRepository.GetOpenRoomsDtoAsync();
-
             await Clients.Caller.SendAsync("OpenRooms", openRooms.OrderBy(r=>r.CreatedAt));
         }
         public async override Task<Task> OnDisconnectedAsync(Exception? exception)
         {
+            
              var room = await _roomRepository.RemovePlayerFromRoomAsync(Context.ConnectionId);
             if (room != null)
             {
@@ -75,7 +76,7 @@ namespace MultiplayerQuizGame.Components.Hubs
 
             var openRooms = await _roomRepository.GetOpenRoomsDtoAsync();
             await Clients.All.SendAsync("OpenRooms", openRooms.OrderBy(r => r.CreatedAt));
-
+            
             room.HostConnectionId = Context.ConnectionId;
             var roomDto = room.Adapt<RoomDto>();
             roomDto.Quiz = await _quizRepository.GetQuizDtoAsync(roomDto.Quiz.Id);
@@ -134,6 +135,15 @@ namespace MultiplayerQuizGame.Components.Hubs
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public async Task DisconnectClient(string clientId, string roomCode)
+        {
+            // Disconnect the specified client
+            var room = await _roomRepository.RemovePlayerFromRoomAsync(clientId);
+            await Clients.Client(clientId).SendAsync("OnDisconnect");
+            await Clients.Group(roomCode).SendAsync("OnPlayerDisconnect", clientId);
+            
         }
 
 

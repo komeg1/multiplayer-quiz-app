@@ -17,5 +17,6 @@ namespace MultiplayerQuizGame.Shared.Models.DTO
         public string ConnectionId { get; set; }
         public int Level { get; set; }
         public int Experience { get; set; }
+        public string AzureAvatarName { get; set; }
     }
 }
