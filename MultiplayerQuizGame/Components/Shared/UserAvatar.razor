@@ -1,7 +1,7 @@
 ﻿@inject IUserRepository UserRepository
-
+@inject IConfiguration Configuration
  
-        <img class="w-20 h-20 rounded-full" src="@(BLOB_URL + AvatarFilename)" alt="Rounded avatar">
+        <img class="w-20 h-20 rounded-full" src="@(BlobUrl + AvatarFilename)" alt="Rounded avatar">
 
 
 @code {
@@ -9,7 +9,7 @@
 
     [Parameter]
     public string AvatarFilename { get; set; }
-    private const string BLOB_URL = "https://komeg1storage.blob.core.windows.net/useravatars/";
+    private string BlobUrl => Configuration["Urls:BlobUrl"]!;
 
 
 

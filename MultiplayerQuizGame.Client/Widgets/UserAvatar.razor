@@ -1,5 +1,6 @@
-﻿<div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-        <img class="w-10 h-10 rounded-full" src="@(BLOB_URL + AvatarFilename)" alt="Rounded avatar">
+﻿@inject IConfiguration Configuration
+<div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+        <img class="w-10 h-10 rounded-full" src="@(BlobUrl + AvatarFilename)" alt="Rounded avatar">
 </div>
 
 @code {
@@ -7,7 +8,7 @@
 
     [Parameter]
     public string AvatarFilename { get; set; }
-    private const string BLOB_URL = "https://komeg1storage.blob.core.windows.net/useravatars/";
+    private string BlobUrl => Configuration["Urls:BlobUrl"]!;
 
 
 
