@@ -18,7 +18,7 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 {
     public class FileService : IFileService
     {
-        private const string CONTAINER_NAME = "profileavatars";
+        private const string CONTAINER_NAME = "useravatars";
         
         private const string DEFAULT_AVATAR_NAME = "default.jpg";
         private const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -46,7 +46,15 @@ namespace MultiplayerQuizGame.Shared.Services.Server
 
            if(blobContainerClient.GetBlobClient(userDto.AzureAvatarName) != null && userDto.AzureAvatarName != DEFAULT_AVATAR_NAME)
             {
-               await blobContainerClient.DeleteBlobAsync(userDto.AzureAvatarName);
+                try
+
+                {
+                    await blobContainerClient.DeleteBlobAsync(userDto.AzureAvatarName);
+                }
+                catch
+                {
+                    Console.WriteLine($"Can't delete {userDto.AzureAvatarName}");
+                }
             }
 
             var avatarRandomName = GetRandomString(FILENAME_LENGTH);

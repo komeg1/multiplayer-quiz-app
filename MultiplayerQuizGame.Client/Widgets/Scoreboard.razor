@@ -28,7 +28,7 @@
                         <button class="@($"bg-{(Players.PlayersStates[player.ConnectionId].IsReady == true ? "green-400 hover:bg-green-500" : "red-400 hover:bg-red-500")} p-2 rounded-full shadow-md flex justify-center items-center")"></button>
                     </div>
                     <div class="flex items-center justify-center">
-                        @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId)
+                        @if (HubConnection.ConnectionId == CurrentRoom.HostConnectionId && player.ConnectionId != CurrentRoom.HostConnectionId)
                         {
                             <button class="bg-red-400 hover:bg-red-500 p-2 rounded-full shadow-md flex justify-center items-center" @onclick="(()=>KickPlayer(player.ConnectionId))">
                                 <svg class="toggle__lock w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
