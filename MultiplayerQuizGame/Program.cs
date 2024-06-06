@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using MultiplayerQuizGame.Shared.Repositories.Interfaces;
 using MultiplayerQuizGame.Shared.Services.Interfaces;
-
-using Microsoft.AspNetCore.Components.Authorization;
 using MultiplayerQuizGame.Shared.Services.Server;
 using MultiplayerQuizGame.Shared.Repositories.Server;
 using MultiplayerQuizGame.Components.Hubs;
@@ -24,7 +22,6 @@ builder.Services.AddScoped(http => new HttpClient
 {
     BaseAddress = new Uri(builder.Configuration.GetSection("BaseUri").Value!),
 });
-
 
 builder.Services.AddDbContext<DataContext>(options =>
 options.UseSqlServer(builder
@@ -67,13 +64,17 @@ builder.Services.AddAzureClients(clientBuilder =>
 
 
 var app = builder.Build();
+app.UseSwagger();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
-    
-    
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
+    });
+
 }
 else
 {
@@ -89,11 +90,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();
 app.UseAuthorization();
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Blazor API V1");
-});
+
 
 
 

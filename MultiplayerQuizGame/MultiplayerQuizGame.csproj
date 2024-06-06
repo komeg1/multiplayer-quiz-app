@@ -39,5 +39,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MultiplayerQuizGame.Client\MultiplayerQuizGame.Client.csproj" />
   </ItemGroup>
+ 
 
 </Project>

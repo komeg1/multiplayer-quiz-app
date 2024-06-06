@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\MultiplayerQuizGame\appsettings.Development.json" Link="appsettings.Development.json" />
+    <Content Include="..\MultiplayerQuizGame\appsettings.json" Link="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
@@ -27,6 +32,8 @@
   <ItemGroup>
     <Folder Include="wwwroot\quizzes\2\" />
   </ItemGroup>
+
+ 
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
